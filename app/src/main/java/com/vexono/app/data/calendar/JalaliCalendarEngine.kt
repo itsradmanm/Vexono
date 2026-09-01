@@ -49,9 +49,22 @@ object JalaliCalendarEngine {
      * Checks whether the specified Jalali year is a leap year.
      */
     fun isJalaliLeap(year: Int): Boolean {
-        val epbase = year - if (year >= 0) 474 else 473
-        val epyear = 474 + (epbase % 2820 + 2820) % 2820
-        return ((epyear + 38) * 682) % 2816 < 682
+        val g1 = jalaliToGregorian(JalaliDate(year, 1, 1))
+        val g2 = jalaliToGregorian(JalaliDate(year + 1, 1, 1))
+        val jdn1 = gregorianToJdn(g1.year, g1.month, g1.day)
+        val jdn2 = gregorianToJdn(g2.year, g2.month, g2.day)
+        return (jdn2 - jdn1) == 366L
+    }
+
+    fun gregorianToJdn(year: Int, month: Int, day: Int): Long {
+        val a = (14 - month) / 12
+        val y = year + 4800 - a
+        val m = month + 12 * a - 3
+        return day + (153 * m + 2) / 5 + 365L * y + y / 4 - y / 100 + y / 400 - 32045L
+    }
+
+    fun isGregorianLeap(year: Int): Boolean {
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
     }
 
     /**
@@ -67,108 +80,141 @@ object JalaliCalendarEngine {
     }
 
     /**
-     * Converts Jalali Date to Julian Day Number (JDN).
-     */
-    fun jalaliToJdn(year: Int, month: Int, day: Int): Long {
-        val epbase = year - if (year >= 0) 474 else 473
-        val epyear = 474 + (epbase % 2820 + 2820) % 2820
-        val md = if (month <= 7) (month - 1) * 31 else (month - 1) * 30 + 6
-        return day + md + (epyear * 682 - 110) / 2816 + (epyear - 1) * 365 + (epbase / 2820) * 1029983L + 1948320L
-    }
-
-    /**
-     * Converts Julian Day Number (JDN) to Jalali Date.
-     */
-    fun jdnToJalali(jdn: Long): JalaliDate {
-        val dep = jdn - jalaliToJdn(475, 1, 1)
-        val ccycle = dep / 1029983L
-        val cday = (dep % 1029983L + 1029983L) % 1029983L
-        val ycycle = if (cday == 1029982L) 2820L else ((cday * 2816L + 1031337L) / 1029983L)
-        val year = (475 + ccycle * 2820 + ycycle).toInt()
-        val yday = jdn - jalaliToJdn(year, 1, 1) + 1
-        val month = if (yday <= 186) {
-            Math.ceil(yday.toDouble() / 31.0).toInt()
-        } else {
-            Math.ceil((yday - 6).toDouble() / 30.0).toInt()
-        }
-        val day = (jdn - jalaliToJdn(year, month, 1) + 1).toInt()
-        return JalaliDate(year, month, day)
-    }
-
-    /**
-     * Converts Gregorian Date to Julian Day Number (JDN).
-     */
-    fun gregorianToJdn(year: Int, month: Int, day: Int): Long {
-        val a = (14 - month) / 12
-        val y = year + 4800 - a
-        val m = month + 12 * a - 3
-        return day + (153 * m + 2) / 5 + 365L * y + y / 4 - y / 100 + y / 400 - 32045L
-    }
-
-    /**
-     * Converts Julian Day Number (JDN) to Gregorian Date.
-     */
-    fun jdnToGregorian(jdn: Long): GregorianDate {
-        val a = jdn + 32044L
-        val b = (4 * a + 3) / 146097L
-        val c = a - (146097L * b) / 4L
-        val d = (4 * c + 3) / 1461L
-        val e = c - (1461L * d) / 4L
-        val m = (5 * e + 2) / 153L
-        val day = (e - (153 * m + 2) / 5 + 1).toInt()
-        val month = (m + 3 - 12 * (m / 10)).toInt()
-        val year = (100 * b + d - 4800 + (m / 10)).toInt()
-        return GregorianDate(year, month, day)
-    }
-
-    /**
-     * Converts Julian Day Number (JDN) to Tabular Islamic (Hijri) Date.
-     */
-    fun jdnToIslamic(jdn: Long): IslamicDate {
-        val l = jdn - 1948440L + 10632L
-        val n = (l - 1) / 10631L
-        val l1 = l - 10631L * n + 354
-        val j = ((10985L - l1) / 5316L) * ((50L * l1) / 17719L) + (l1 / 5670L) * ((43L * l1) / 15238L)
-        val l2 = l1 - ((30L - j) / 15L) * ((17719L * j) / 50L) - (j / 16L) * ((15238L * j) / 43L) + 29
-        val month = ((24L * l2) / 709L).toInt()
-        val day = (l2 - (709L * month) / 24L).toInt()
-        val year = (30L * n + j - 30L).toInt()
-        return IslamicDate(year, month, day)
-    }
-
-    /**
      * Converts Jalali Date directly to Gregorian Date.
      */
     fun jalaliToGregorian(jalaliDate: JalaliDate): GregorianDate {
-        val jdn = jalaliToJdn(jalaliDate.year, jalaliDate.month, jalaliDate.day)
-        return jdnToGregorian(jdn)
+        val jy = jalaliDate.year - 979
+        val jm = jalaliDate.month - 1
+        val jd = jalaliDate.day - 1
+
+        var jDayNo = 365L * jy + (jy / 33) * 8 + ((jy % 33 + 3) / 4)
+        for (i in 0 until jm) {
+            jDayNo += if (i < 6) 31 else 30
+        }
+        jDayNo += jd
+
+        var gDayNo = jDayNo + 79
+
+        var gy = 1600 + 400 * (gDayNo / 146097)
+        gDayNo %= 146097
+
+        var leap = true
+        if (gDayNo >= 36525) {
+            gDayNo--
+            gy += 100 * (gDayNo / 36524)
+            gDayNo %= 36524
+
+            if (gDayNo >= 365) {
+                gDayNo++
+            } else {
+                leap = false
+            }
+        }
+
+        gy += 4 * (gDayNo / 1461)
+        gDayNo %= 1461
+
+        if (gDayNo >= 366) {
+            leap = false
+            gDayNo--
+            gy += gDayNo / 365
+            gDayNo %= 365
+        }
+
+        val gDaysInMonths = intArrayOf(
+            31, if (isGregorianLeap(gy.toInt())) 29 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+        )
+
+        var gm = 0
+        while (gm < 12 && gDayNo >= gDaysInMonths[gm]) {
+            gDayNo -= gDaysInMonths[gm]
+            gm++
+        }
+
+        return GregorianDate(gy.toInt(), gm + 1, (gDayNo + 1).toInt())
     }
 
     /**
      * Converts Gregorian Date directly to Jalali Date.
      */
     fun gregorianToJalali(gregorianDate: GregorianDate): JalaliDate {
-        val jdn = gregorianToJdn(gregorianDate.year, gregorianDate.month, gregorianDate.day)
-        return jdnToJalali(jdn)
+        val gy = gregorianDate.year - 1600
+        val gm = gregorianDate.month - 1
+        val gd = gregorianDate.day - 1
+
+        val gDaysInMonths = intArrayOf(
+            31,
+            if (isGregorianLeap(gregorianDate.year)) 29 else 28,
+            31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+        )
+
+        var gDayNo = 365L * gy + ((gy + 3) / 4) - ((gy + 99) / 100) + ((gy + 399) / 400)
+        for (i in 0 until gm) {
+            gDayNo += gDaysInMonths[i]
+        }
+        gDayNo += gd
+
+        var jDayNo = gDayNo - 79
+
+        val jNp = jDayNo / 12053
+        jDayNo %= 12053
+
+        var jy = 979 + 33 * jNp + 4 * (jDayNo / 1461)
+        jDayNo %= 1461
+
+        if (jDayNo >= 366) {
+            jy += (jDayNo - 1) / 365
+            jDayNo = (jDayNo - 1) % 365
+        }
+
+        var jm = 0
+        val jDaysInMonths = intArrayOf(31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29)
+        while (jm < 11 && jDayNo >= jDaysInMonths[jm]) {
+            jDayNo -= jDaysInMonths[jm]
+            jm++
+        }
+
+        return JalaliDate(jy.toInt(), jm + 1, (jDayNo + 1).toInt())
     }
 
     /**
      * Converts Jalali Date to Islamic (Hijri) Date.
      */
     fun jalaliToIslamic(jalaliDate: JalaliDate): IslamicDate {
-        val jdn = jalaliToJdn(jalaliDate.year, jalaliDate.month, jalaliDate.day)
-        return jdnToIslamic(jdn)
+        val gDate = jalaliToGregorian(jalaliDate)
+        val a = (14 - gDate.month) / 12
+        val y = gDate.year + 4800 - a
+        val m = gDate.month + 12 * a - 3
+        val jdn = gDate.day + (153 * m + 2) / 5 + 365L * y + y / 4 - y / 100 + y / 400 - 32045L
+
+        val l = jdn - 1948440L + 10632L
+        val n = (l - 1) / 10631L
+        val l1 = l - 10631L * n + 354
+        val j = ((10985L - l1) / 5316L) * ((50L * l1) / 17719L) + (l1 / 5670L) * ((43L * l1) / 15238L)
+        val l2 = l1 - ((30L - j) / 15L) * ((17719L * j) / 50L) - (j / 16L) * ((15238L * j) / 43L) + 29
+        val iMonth = ((24L * l2) / 709L).toInt()
+        val iDay = (l2 - (709L * iMonth) / 24L).toInt()
+        val iYear = (30L * n + j - 30L).toInt()
+        return IslamicDate(iYear, iMonth, iDay)
     }
 
     /**
      * Returns the day of week index where 0 = Saturday (شنبه) to 6 = Friday (جمعه).
      */
     fun getDayOfWeek(jalaliDate: JalaliDate): Int {
-        val jdn = jalaliToJdn(jalaliDate.year, jalaliDate.month, jalaliDate.day)
-        // JDN modulo 7 gives: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
-        val standardDay = ((jdn + 1) % 7).toInt() // 0=Sunday, 1=Monday, ..., 6=Saturday
-        // We want Saturday to be 0:
-        return (standardDay + 1) % 7
+        val gDate = jalaliToGregorian(jalaliDate)
+        val cal = Calendar.getInstance()
+        cal.set(gDate.year, gDate.month - 1, gDate.day)
+        return when (cal.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SATURDAY -> 0
+            Calendar.SUNDAY -> 1
+            Calendar.MONDAY -> 2
+            Calendar.TUESDAY -> 3
+            Calendar.WEDNESDAY -> 4
+            Calendar.THURSDAY -> 5
+            Calendar.FRIDAY -> 6
+            else -> 0
+        }
     }
 
     /**

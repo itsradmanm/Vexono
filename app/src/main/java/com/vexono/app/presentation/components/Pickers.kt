@@ -127,7 +127,7 @@ fun PersianDatePickerDialog(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(1..12) { month ->
+                    items((1..12).toList()) { month ->
                         val isSelected = month == selectedMonth
                         val monthName = JalaliCalendarEngine.PERSIAN_MONTH_NAMES[month - 1]
                         Box(
@@ -160,7 +160,7 @@ fun PersianDatePickerDialog(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(1..daysInMonth) { day ->
+                    items((1..daysInMonth).toList()) { day ->
                         val isSelected = day == selectedDay
                         Box(
                             modifier = Modifier
@@ -255,7 +255,7 @@ fun PersianTimePickerDialog(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(0..23) { hour ->
+                    items((0..23).toList()) { hour ->
                         val isSelected = hour == selectedHour
                         Box(
                             modifier = Modifier

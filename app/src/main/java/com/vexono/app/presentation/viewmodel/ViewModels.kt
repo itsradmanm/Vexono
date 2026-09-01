@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -455,10 +456,6 @@ class SettingsViewModel(
 
 // Simple Helper Tuple
 data class Tuple4<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
-
-// Helper extension for mapping Flow
-private fun <T, R> kotlinx.coroutines.flow.Flow<T>.map(transform: suspend (value: T) -> R): kotlinx.coroutines.flow.Flow<R> =
-    kotlinx.coroutines.flow.map(transform)
 
 // Factory Provider
 class ViewModelFactory(
