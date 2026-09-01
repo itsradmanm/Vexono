@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- Header: Day Name & Year -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_weekday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="چهارشنبه"
+            android:textColor="#00E5C7"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="۱۴۰۳"
+            android:textColor="#9E9EA8"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <!-- Main Large Jalali Day Number -->
+    <TextView
+        android:id="@+id/widget_day_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        android:text="۱۵"
+        android:textColor="#F5F5F7"
+        android:textSize="36sp"
+        android:textStyle="bold" />
+
+    <!-- Jalali Month Name -->
+    <TextView
+        android:id="@+id/widget_month_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="اسفند"
+        android:textColor="#7C4DFF"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <!-- Gregorian Date (Subtle) -->
+    <TextView
+        android:id="@+id/widget_gregorian_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="5 March 2025"
+        android:textColor="#6E6E7A"
+        android:textSize="11sp" />
+
+    <!-- Occasion / Holiday Banner -->
+    <TextView
+        android:id="@+id/widget_occasion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/widget_tag_background"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingStart="8dp"
+        android:paddingTop="3dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="3dp"
+        android:text="روز بزرگداشت خواجه نصیرالدین طوسی"
+        android:textColor="#F5F5F7"
+        android:textSize="10sp" />
+
+</LinearLayout>

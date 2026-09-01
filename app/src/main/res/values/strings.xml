@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Vexono</string>
+    <string name="widget_name">تقویم امروز Vexono</string>
+    <string name="calendar">تقویم</string>
+    <string name="tasks">تسک‌ها</string>
+    <string name="occasions">مناسبت‌ها</string>
+    <string name="settings">تنظیمات</string>
+    <string name="today">امروز</string>
+</resources>
