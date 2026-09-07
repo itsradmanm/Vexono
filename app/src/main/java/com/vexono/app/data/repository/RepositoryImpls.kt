@@ -149,4 +149,8 @@ class SettingsRepositoryImpl(
     override suspend fun updateEnableNotifications(enable: Boolean) {
         preferencesDataStore.updateEnableNotifications(enable)
     }
+
+    override suspend fun updateEnablePersistentNotification(enable: Boolean) {
+        preferencesDataStore.updateEnablePersistentNotification(enable)
+    }
 }

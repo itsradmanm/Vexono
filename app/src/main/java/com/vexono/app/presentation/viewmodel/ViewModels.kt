@@ -363,7 +363,7 @@ data class OccasionsUiState(
     val searchQuery: String = "",
     val selectedCategory: OccasionCategory? = null,
     val onlyHolidays: Boolean = false,
-    val availableYears: List<Int> = (1394..1406).toList()
+    val availableYears: List<Int> = (1300..1500).toList()
 )
 
 class OccasionsViewModel(
@@ -450,6 +450,12 @@ class SettingsViewModel(
     fun setEnableNotifications(enable: Boolean) {
         viewModelScope.launch {
             container.updateSettingsUseCase.setEnableNotifications(enable)
+        }
+    }
+
+    fun setEnablePersistentNotification(enable: Boolean) {
+        viewModelScope.launch {
+            container.updateSettingsUseCase.setEnablePersistentNotification(enable)
         }
     }
 }

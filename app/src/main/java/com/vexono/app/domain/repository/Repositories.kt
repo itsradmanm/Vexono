@@ -45,4 +45,5 @@ interface SettingsRepository {
     suspend fun updateShowGregorianDate(show: Boolean)
     suspend fun updateShowIslamicDate(show: Boolean)
     suspend fun updateEnableNotifications(enable: Boolean)
+    suspend fun updateEnablePersistentNotification(enable: Boolean)
 }

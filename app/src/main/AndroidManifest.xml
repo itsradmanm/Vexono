@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:name=".VexonoApplication"
@@ -44,6 +46,28 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/vexono_widget_info" />
+        </receiver>
+
+        <!-- Persistent Notification Service -->
+        <service
+            android:name=".data.service.PersistentCalendarNotificationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Displays current Persian calendar date and events constantly in status bar" />
+        </service>
+
+        <!-- Midnight Update Receiver -->
+        <receiver
+            android:name=".data.receiver.MidnightUpdateReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
         </receiver>
 
     </application>

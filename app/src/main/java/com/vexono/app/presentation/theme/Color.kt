@@ -3,9 +3,9 @@ package com.vexono.app.presentation.theme
 import androidx.compose.ui.graphics.Color
 
 // Default Dark Theme Colors (Vexono Signature)
-val VexonoDarkBackground = Color(0xFF0F0F14)
-val VexonoDarkSurface = Color(0xFF1B1B24)
-val VexonoDarkSurfaceElevated = Color(0xFF242430)
+val VexonoDarkBackground = Color(0xFF0C0C12)
+val VexonoDarkSurface = Color(0xFF1E1E2C)
+val VexonoDarkSurfaceElevated = Color(0xFF262636)
 val VexonoDarkSurfaceVariant = Color(0xFF2A2A38)
 val VexonoDarkBorder = Color(0xFF333345)
 
@@ -20,9 +20,9 @@ val VexonoTextSecondary = Color(0xFF9E9EA8)
 val VexonoTextMuted = Color(0xFF6E6E7A)
 
 // Light Mode Fallback Colors
-val VexonoLightBackground = Color(0xFFF7F8FC)
+val VexonoLightBackground = Color(0xFFF4F6FB)
 val VexonoLightSurface = Color(0xFFFFFFFF)
-val VexonoLightSurfaceElevated = Color(0xFFF0F1F7)
+val VexonoLightSurfaceElevated = Color(0xFFFFFFFF)
 val VexonoLightSurfaceVariant = Color(0xFFE5E7F0)
 val VexonoLightBorder = Color(0xFFDDE1EE)
 val VexonoLightTextPrimary = Color(0xFF1A1A24)

@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,22 +25,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -57,11 +53,17 @@ import androidx.compose.ui.unit.sp
 import com.vexono.app.data.calendar.JalaliCalendarEngine
 import com.vexono.app.domain.model.JalaliDate
 import com.vexono.app.domain.model.RecurrenceType
+import com.vexono.app.presentation.components.GlassButton
+import com.vexono.app.presentation.components.GlassCard
+import com.vexono.app.presentation.components.GlassIconButton
+import com.vexono.app.presentation.components.GlassSurface
+import com.vexono.app.presentation.components.GlassTextField
 import com.vexono.app.presentation.components.PersianDatePickerDialog
 import com.vexono.app.presentation.components.PersianTimePickerDialog
 import com.vexono.app.presentation.theme.LocalCustomColors
 import com.vexono.app.presentation.viewmodel.EventEditorViewModel
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EventEditorScreen(
     viewModel: EventEditorViewModel,
@@ -121,26 +123,32 @@ fun EventEditorScreen(
 
     Scaffold(
         topBar = {
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 2.dp
+            GlassSurface(
+                shape = RoundedCornerShape(bottomStart = 22.dp, bottomEnd = 22.dp),
+                backgroundColor = Color.White.copy(alpha = 0.05f),
+                borderColor = Color.White.copy(alpha = 0.1f),
+                shadowElevation = 4.dp,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 12.dp),
+                        .padding(horizontal = 8.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = onNavigateBack) {
+                        GlassIconButton(
+                            onClick = onNavigateBack,
+                            size = 38.dp
+                        ) {
                             Icon(
-                                imageVector = Icons.Default.ArrowForward,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "بازگشت",
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = if (uiState.id > 0) "ویرایش رویداد" else "افزودن رویداد جدید",
                             style = MaterialTheme.typography.titleMedium,
@@ -150,7 +158,12 @@ fun EventEditorScreen(
                     }
 
                     if (uiState.id > 0) {
-                        IconButton(onClick = { viewModel.deleteEvent(onNavigateBack) }) {
+                        GlassIconButton(
+                            onClick = { viewModel.deleteEvent(onNavigateBack) },
+                            size = 38.dp,
+                            containerColor = customColors.holidayColor.copy(alpha = 0.12f),
+                            borderColor = customColors.holidayColor.copy(alpha = 0.35f)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "حذف رویداد",
@@ -162,9 +175,14 @@ fun EventEditorScreen(
             }
         },
         bottomBar = {
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 8.dp
+            GlassSurface(
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                backgroundColor = customColors.surfaceElevated.copy(alpha = 0.95f),
+                borderColor = Color.White.copy(alpha = 0.14f),
+                shadowElevation = 12.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
             ) {
                 Row(
                     modifier = Modifier
@@ -172,16 +190,17 @@ fun EventEditorScreen(
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Button(
+                    GlassButton(
                         onClick = { viewModel.saveEvent(onNavigateBack) },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        shape = RoundedCornerShape(12.dp),
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                        borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
                             text = if (uiState.id > 0) "ذخیره تغییرات" else "ثبت رویداد",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
+                            fontSize = 15.sp,
+                            color = Color.White
                         )
                     }
                 }
@@ -200,9 +219,9 @@ fun EventEditorScreen(
         ) {
             // Error banner if any
             if (uiState.error != null) {
-                Surface(
-                    color = customColors.holidayColor.copy(alpha = 0.15f),
-                    shape = RoundedCornerShape(12.dp),
+                GlassCard(
+                    backgroundColor = customColors.holidayColor.copy(alpha = 0.15f),
+                    borderColor = customColors.holidayColor.copy(alpha = 0.35f),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
@@ -215,50 +234,53 @@ fun EventEditorScreen(
                 }
             }
 
-            // 1. Title Input
-            OutlinedTextField(
-                value = uiState.title,
-                onValueChange = { viewModel.setTitle(it) },
-                label = { Text("عنوان رویداد *") },
-                placeholder = { Text("مثال: جلسه کاری، تولد علی...") },
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
+            // 1. Title Input (Glassy)
+            Column {
+                Text(
+                    text = "عنوان رویداد *",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                GlassTextField(
+                    value = uiState.title,
+                    onValueChange = { viewModel.setTitle(it) },
+                    placeholder = "مثال: جلسه کاری، تولد علی...",
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            // 2. Description Input
-            OutlinedTextField(
-                value = uiState.description,
-                onValueChange = { viewModel.setDescription(it) },
-                label = { Text("توضیحات و یادداشت (اختیاری)") },
-                placeholder = { Text("توضیحات بیشتر در مورد این رویداد...") },
-                minLines = 3,
-                maxLines = 5,
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
+            // 2. Description Input (Glassy)
+            Column {
+                Text(
+                    text = "توضیحات و یادداشت (اختیاری)",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                GlassTextField(
+                    value = uiState.description,
+                    onValueChange = { viewModel.setDescription(it) },
+                    placeholder = "توضیحات بیشتر در مورد این رویداد...",
+                    singleLine = false,
+                    maxLines = 4,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            // 3. Date & Time Selectors Row
+            // 3. Date & Time Selectors Row (Glassy)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Date Picker Button
-                Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { showDatePicker = true }
+                GlassCard(
+                    shape = RoundedCornerShape(16.dp),
+                    backgroundColor = Color.White.copy(alpha = 0.07f),
+                    borderColor = Color.White.copy(alpha = 0.12f),
+                    onClick = { showDatePicker = true },
+                    modifier = Modifier.weight(1f)
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
@@ -275,7 +297,7 @@ fun EventEditorScreen(
                             Text("تاریخ شمسی", fontSize = 11.sp, color = customColors.textMuted)
                             Text(
                                 text = "${JalaliCalendarEngine.toPersianDigits(uiState.jalaliDay)} ${JalaliCalendarEngine.PERSIAN_MONTH_NAMES.getOrElse(uiState.jalaliMonth - 1) { "" }} ${JalaliCalendarEngine.toPersianDigits(uiState.jalaliYear)}",
-                                fontSize = 13.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -284,13 +306,12 @@ fun EventEditorScreen(
                 }
 
                 // Time Picker Button
-                Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { showTimePicker = true }
+                GlassCard(
+                    shape = RoundedCornerShape(16.dp),
+                    backgroundColor = Color.White.copy(alpha = 0.07f),
+                    borderColor = Color.White.copy(alpha = 0.12f),
+                    onClick = { showTimePicker = true },
+                    modifier = Modifier.weight(1f)
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
@@ -307,7 +328,7 @@ fun EventEditorScreen(
                             Text("ساعت", fontSize = 11.sp, color = customColors.textMuted)
                             Text(
                                 text = "${JalaliCalendarEngine.toPersianDigits(String.format("%02d", uiState.hour))}:${JalaliCalendarEngine.toPersianDigits(String.format("%02d", uiState.minute))}",
-                                fontSize = 13.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -373,24 +394,24 @@ fun EventEditorScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyRow(
+                FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(recurrenceOptions) { (type, label) ->
+                    recurrenceOptions.forEach { (type, label) ->
                         val isSelected = uiState.recurrence == type
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                                .clickable { viewModel.setRecurrence(type) }
-                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        GlassCard(
+                            backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f) else Color.White.copy(alpha = 0.05f),
+                            borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.1f),
+                            onClick = { viewModel.setRecurrence(type) }
                         ) {
                             Text(
                                 text = label,
                                 color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
-                                fontSize = 13.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                             )
                         }
                     }
@@ -398,10 +419,10 @@ fun EventEditorScreen(
             }
 
             // 6. Reminder & Notification
-            Surface(
-                shape = RoundedCornerShape(14.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            GlassCard(
+                shape = RoundedCornerShape(18.dp),
+                backgroundColor = Color.White.copy(alpha = 0.07f),
+                borderColor = Color.White.copy(alpha = 0.12f),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
@@ -451,24 +472,24 @@ fun EventEditorScreen(
                             color = customColors.textMuted
                         )
                         Spacer(modifier = Modifier.height(6.dp))
-                        LazyRow(
+                        FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            items(reminderOptions) { (mins, label) ->
+                            reminderOptions.forEach { (mins, label) ->
                                 val isSelected = uiState.reminderMinutesBefore == mins
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(if (isSelected) customColors.accentColor else MaterialTheme.colorScheme.surfaceVariant)
-                                        .clickable { viewModel.setReminderMinutesBefore(mins) }
-                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                GlassCard(
+                                    backgroundColor = if (isSelected) customColors.accentColor.copy(alpha = 0.35f) else Color.White.copy(alpha = 0.05f),
+                                    borderColor = if (isSelected) customColors.accentColor.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.1f),
+                                    onClick = { viewModel.setReminderMinutesBefore(mins) }
                                 ) {
                                     Text(
                                         text = label,
-                                        color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 12.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                                     )
                                 }
                             }

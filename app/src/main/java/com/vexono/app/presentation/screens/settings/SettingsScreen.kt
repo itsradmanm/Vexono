@@ -26,29 +26,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Translate
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +54,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vexono.app.domain.model.ThemeMode
+import com.vexono.app.presentation.components.GlassCard
+import com.vexono.app.presentation.components.GlassSurface
 import com.vexono.app.presentation.theme.BrandColorPreset
 import com.vexono.app.presentation.theme.LocalCustomColors
 import com.vexono.app.presentation.viewmodel.SettingsViewModel
@@ -71,11 +69,61 @@ fun SettingsScreen(
     val customColors = LocalCustomColors.current
     val context = LocalContext.current
 
+    var hasNotificationPermission by remember {
+        mutableStateOf(
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                androidx.core.content.ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            }
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        hasNotificationPermission = isGranted
+        if (!isGranted) {
+            viewModel.setEnablePersistentNotification(false)
+        } else {
+            val serviceIntent = Intent(context, com.vexono.app.data.service.PersistentCalendarNotificationService::class.java)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent)
+            } else {
+                context.startService(serviceIntent)
+            }
+        }
+    }
+
+    LaunchedEffect(settings.enablePersistentNotification) {
+        if (settings.enablePersistentNotification) {
+            if (!hasNotificationPermission && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                val serviceIntent = Intent(context, com.vexono.app.data.service.PersistentCalendarNotificationService::class.java)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    context.startForegroundService(serviceIntent)
+                } else {
+                    context.startService(serviceIntent)
+                }
+            }
+        } else {
+            val serviceIntent = Intent(context, com.vexono.app.data.service.PersistentCalendarNotificationService::class.java)
+            context.stopService(serviceIntent)
+        }
+    }
+
     Scaffold(
         topBar = {
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 2.dp
+            GlassSurface(
+                shape = RoundedCornerShape(bottomStart = 22.dp, bottomEnd = 22.dp),
+                backgroundColor = Color.White.copy(alpha = 0.05f),
+                borderColor = Color.White.copy(alpha = 0.1f),
+                shadowElevation = 4.dp,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
@@ -91,7 +139,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "تنظیمات Vexono",
+                        text = "تنظیمات و شخصی‌سازی Vexono",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -111,7 +159,7 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // 1. Theme Mode Card
-            SettingsSectionCard(title = "حالت تم و نمایش") {
+            GlassSettingsSectionCard(title = "حالت تم و رنگ‌بندی شیشه‌ای") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -144,7 +192,7 @@ fun SettingsScreen(
 
                     // Brand Accent Color Selector
                     Text(
-                        text = "رنگ اصلی برند:",
+                        text = "رنگ پایه تم (پویای شیشه‌ای):",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -181,7 +229,7 @@ fun SettingsScreen(
             }
 
             // 2. Calendar Display Preferences
-            SettingsSectionCard(title = "تنظیمات تقویم و نمایش تاریخ") {
+            GlassSettingsSectionCard(title = "تنظیمات تقویم و نمایش تاریخ") {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     // Gregorian toggle
                     SettingsToggleRow(
@@ -202,17 +250,25 @@ fun SettingsScreen(
             }
 
             // 3. Notifications & Reminders
-            SettingsSectionCard(title = "اعلان‌ها و یادآوری‌ها") {
-                SettingsToggleRow(
-                    title = "فعال‌سازی نوتیفیکیشن‌ها",
-                    subtitle = "ارسال آلارم و یادآور رویدادها در زمان مقرر",
-                    isChecked = settings.enableNotifications,
-                    onCheckedChange = { viewModel.setEnableNotifications(it) }
-                )
+            GlassSettingsSectionCard(title = "اعلان‌ها و یادآوری‌ها") {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    SettingsToggleRow(
+                        title = "فعال‌سازی نوتیفیکیشن‌ها",
+                        subtitle = "ارسال آلارم و یادآور رویدادها در زمان مقرر",
+                        isChecked = settings.enableNotifications,
+                        onCheckedChange = { viewModel.setEnableNotifications(it) }
+                    )
+                    SettingsToggleRow(
+                        title = "نوتیفیکیشن دائم تقویم",
+                        subtitle = "نمایش تاریخ امروز و مناسبت‌ها به صورت دائم در نوار وضعیت",
+                        isChecked = settings.enablePersistentNotification,
+                        onCheckedChange = { viewModel.setEnablePersistentNotification(it) }
+                    )
+                }
             }
 
             // 4. About Vexono & GitHub
-            SettingsSectionCard(title = "درباره Vexono") {
+            GlassSettingsSectionCard(title = "درباره Vexono") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -232,33 +288,32 @@ fun SettingsScreen(
                                 color = customColors.textMuted
                             )
                         }
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                        GlassCard(
+                            backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
                         ) {
                             Text(
                                 text = "v0.1.0",
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                             )
                         }
                     }
 
                     // GitHub Repository Link Row
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                val intent = Intent(
-                                    Intent.ACTION_VIEW,
-                                    Uri.parse("https://github.com/vexono/vexono-android")
-                                )
-                                context.startActivity(intent)
-                            }
+                    GlassCard(
+                        backgroundColor = Color.White.copy(alpha = 0.05f),
+                        borderColor = Color.White.copy(alpha = 0.12f),
+                        onClick = {
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("https://github.com/vexono/vexono-android")
+                            )
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
                             modifier = Modifier
@@ -298,9 +353,8 @@ fun SettingsScreen(
                         }
                     }
 
-                    // License info
                     Text(
-                        text = "طراحی و توسعه یافته تحت لایسنس MIT با معماری تمیز و کامپوننت‌های مدرن اندروید.",
+                        text = "طراحی و توسعه یافته با معماری شیشه‌ای Glassmorphism، بازه سال‌های پویا و پشتیبانی کامل از مناسبت‌ها.",
                         fontSize = 11.sp,
                         color = customColors.textMuted,
                         lineHeight = 16.sp
@@ -314,13 +368,14 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SettingsSectionCard(
+private fun GlassSettingsSectionCard(
     title: String,
     content: @Composable () -> Unit
 ) {
-    Card(
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    GlassCard(
+        shape = RoundedCornerShape(20.dp),
+        backgroundColor = Color.White.copy(alpha = 0.06f),
+        borderColor = Color.White.copy(alpha = 0.12f),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -348,17 +403,18 @@ private fun ThemeOptionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    GlassCard(
+        backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f) else Color.White.copy(alpha = 0.05f),
+        borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.1f),
+        onClick = onClick,
         modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-            .clickable { onClick() }
-            .padding(vertical = 10.dp),
-        contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp)
         ) {
             Icon(
                 imageVector = icon,

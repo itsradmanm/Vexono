@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,16 +27,12 @@ import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Event
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -53,6 +50,11 @@ import com.vexono.app.domain.model.Event
 import com.vexono.app.domain.model.JalaliDate
 import com.vexono.app.domain.model.Task
 import com.vexono.app.presentation.components.EmptyStateView
+import com.vexono.app.presentation.components.GlassButton
+import com.vexono.app.presentation.components.GlassCard
+import com.vexono.app.presentation.components.GlassIconButton
+import com.vexono.app.presentation.components.GlassOutlinedButton
+import com.vexono.app.presentation.components.GlassSurface
 import com.vexono.app.presentation.components.OccasionCategoryBadge
 import com.vexono.app.presentation.components.PriorityBadge
 import com.vexono.app.presentation.theme.LocalCustomColors
@@ -75,26 +77,32 @@ fun DayDetailScreen(
 
     Scaffold(
         topBar = {
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 2.dp
+            GlassSurface(
+                shape = RoundedCornerShape(bottomStart = 22.dp, bottomEnd = 22.dp),
+                backgroundColor = Color.White.copy(alpha = 0.05f),
+                borderColor = Color.White.copy(alpha = 0.1f),
+                shadowElevation = 4.dp,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 12.dp),
+                        .padding(horizontal = 8.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = onNavigateBack) {
+                    GlassIconButton(
+                        onClick = onNavigateBack,
+                        size = 38.dp
+                    ) {
                         Icon(
                             imageVector = Icons.Default.ArrowForward,
                             contentDescription = "بازگشت",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "جزئیات روز",
+                        text = "جزئیات و برنامه‌های روز",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -103,9 +111,14 @@ fun DayDetailScreen(
             }
         },
         bottomBar = {
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 8.dp
+            GlassSurface(
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                backgroundColor = customColors.surfaceElevated.copy(alpha = 0.95f),
+                borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.14f),
+                shadowElevation = 12.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
             ) {
                 Row(
                     modifier = Modifier
@@ -113,25 +126,22 @@ fun DayDetailScreen(
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Button(
+                    GlassButton(
                         onClick = { onAddEventRequested(uiState.jalaliDate) },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("افزودن رویداد", fontWeight = FontWeight.Bold)
+                        Text("افزودن رویداد", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     }
 
-                    OutlinedButton(
+                    GlassOutlinedButton(
                         onClick = { onAddTaskRequested(uiState.jalaliDate) },
-                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Default.Checklist, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("افزودن تسک", fontWeight = FontWeight.Bold)
+                        Text("افزودن تسک", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     }
                 }
             }
@@ -148,11 +158,11 @@ fun DayDetailScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                // 1. Full Date Banner Card
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    shadowElevation = 2.dp,
+                // 1. Full Date Banner Card (Glassy)
+                GlassCard(
+                    shape = RoundedCornerShape(22.dp),
+                    backgroundColor = Color.White.copy(alpha = 0.08f),
+                    borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -175,17 +185,17 @@ fun DayDetailScreen(
                             Text(
                                 text = "میلادی: ${JalaliCalendarEngine.getFullGregorianDateString(gregorianDate)}",
                                 color = customColors.textMuted,
-                                fontSize = 13.sp
+                                fontSize = 12.sp
                             )
                             Text(
                                 text = "  •  ",
                                 color = customColors.textMuted,
-                                fontSize = 13.sp
+                                fontSize = 12.sp
                             )
                             Text(
                                 text = "قمری: ${JalaliCalendarEngine.getFullIslamicDateString(islamicDate)}",
                                 color = customColors.textMuted,
-                                fontSize = 13.sp
+                                fontSize = 12.sp
                             )
                         }
                     }
@@ -204,9 +214,10 @@ fun DayDetailScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         uiState.occasions.forEach { occ ->
-                            Surface(
-                                shape = RoundedCornerShape(14.dp),
-                                color = MaterialTheme.colorScheme.surface,
+                            GlassCard(
+                                shape = RoundedCornerShape(16.dp),
+                                backgroundColor = if (occ.isHoliday) customColors.holidayColor.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.06f),
+                                borderColor = if (occ.isHoliday) customColors.holidayColor.copy(alpha = 0.35f) else Color.White.copy(alpha = 0.12f),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
@@ -258,7 +269,7 @@ fun DayDetailScreen(
                 }
             } else {
                 items(uiState.events) { event ->
-                    EventItemCard(
+                    GlassEventItemCard(
                         event = event,
                         onEdit = { onEditEventRequested(event.id) },
                         onDelete = { viewModel.deleteEvent(event.id) }
@@ -293,7 +304,7 @@ fun DayDetailScreen(
                 }
             } else {
                 items(uiState.tasks) { task ->
-                    TaskItemCard(
+                    GlassTaskItemCard(
                         task = task,
                         onToggle = { isChecked -> viewModel.toggleTask(task.id, isChecked) },
                         onDelete = { viewModel.deleteTask(task.id) }
@@ -309,16 +320,17 @@ fun DayDetailScreen(
 }
 
 @Composable
-private fun EventItemCard(
+private fun GlassEventItemCard(
     event: Event,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     val eventColor = runCatching { Color(android.graphics.Color.parseColor(event.colorHex)) }.getOrDefault(MaterialTheme.colorScheme.primary)
 
-    Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surface,
+    GlassCard(
+        shape = RoundedCornerShape(16.dp),
+        backgroundColor = Color.White.copy(alpha = 0.07f),
+        borderColor = Color.White.copy(alpha = 0.12f),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -342,7 +354,9 @@ private fun EventItemCard(
                     text = event.title,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 if (event.description.isNotBlank()) {
                     Text(
@@ -370,21 +384,31 @@ private fun EventItemCard(
                 }
             }
 
-            IconButton(onClick = onEdit) {
+            GlassIconButton(
+                onClick = onEdit,
+                size = 36.dp
+            ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "ویرایش",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
             }
 
-            IconButton(onClick = onDelete) {
+            Spacer(modifier = Modifier.width(6.dp))
+
+            GlassIconButton(
+                onClick = onDelete,
+                size = 36.dp,
+                containerColor = LocalCustomColors.current.holidayColor.copy(alpha = 0.1f),
+                borderColor = LocalCustomColors.current.holidayColor.copy(alpha = 0.25f)
+            ) {
                 Icon(
                     imageVector = Icons.Default.DeleteOutline,
                     contentDescription = "حذف",
                     tint = LocalCustomColors.current.holidayColor,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
@@ -392,14 +416,15 @@ private fun EventItemCard(
 }
 
 @Composable
-private fun TaskItemCard(
+private fun GlassTaskItemCard(
     task: Task,
     onToggle: (Boolean) -> Unit,
     onDelete: () -> Unit
 ) {
-    Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surface,
+    GlassCard(
+        shape = RoundedCornerShape(16.dp),
+        backgroundColor = if (task.isCompleted) Color.White.copy(alpha = 0.03f) else Color.White.copy(alpha = 0.07f),
+        borderColor = if (task.isCompleted) Color.White.copy(alpha = 0.06f) else Color.White.copy(alpha = 0.12f),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -413,7 +438,7 @@ private fun TaskItemCard(
                 onCheckedChange = onToggle,
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             )
 
@@ -423,18 +448,27 @@ private fun TaskItemCard(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = if (task.isCompleted) FontWeight.Normal else FontWeight.Medium,
                     color = if (task.isCompleted) LocalCustomColors.current.textMuted else MaterialTheme.colorScheme.onSurface,
-                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
 
             PriorityBadge(priority = task.priority)
 
-            IconButton(onClick = onDelete) {
+            Spacer(modifier = Modifier.width(6.dp))
+
+            GlassIconButton(
+                onClick = onDelete,
+                size = 36.dp,
+                containerColor = LocalCustomColors.current.holidayColor.copy(alpha = 0.1f),
+                borderColor = LocalCustomColors.current.holidayColor.copy(alpha = 0.25f)
+            ) {
                 Icon(
                     imageVector = Icons.Default.DeleteOutline,
                     contentDescription = "حذف",
                     tint = LocalCustomColors.current.holidayColor,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }

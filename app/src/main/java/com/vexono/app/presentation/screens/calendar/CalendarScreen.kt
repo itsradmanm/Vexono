@@ -7,6 +7,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -35,13 +37,9 @@ import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -62,7 +60,14 @@ import com.vexono.app.data.calendar.JalaliCalendarEngine
 import com.vexono.app.domain.model.CalendarDay
 import com.vexono.app.domain.model.JalaliDate
 import com.vexono.app.presentation.components.CalendarDayCell
+import com.vexono.app.presentation.components.GlassButton
+import com.vexono.app.presentation.components.GlassCard
+import com.vexono.app.presentation.components.GlassFloatingActionButton
+import com.vexono.app.presentation.components.GlassIconButton
+import com.vexono.app.presentation.components.GlassOutlinedButton
+import com.vexono.app.presentation.components.GlassSurface
 import com.vexono.app.presentation.components.OccasionCategoryBadge
+import com.vexono.app.presentation.components.OccasionDetailBottomSheet
 import com.vexono.app.presentation.components.PersianDatePickerDialog
 import com.vexono.app.presentation.theme.LocalCustomColors
 import com.vexono.app.presentation.viewmodel.CalendarViewModel
@@ -80,6 +85,7 @@ fun CalendarScreen(
 
     var showDatePickerDialog by remember { mutableStateOf(false) }
     var isFabExpanded by remember { mutableStateOf(false) }
+    var activeBottomSheetDay by remember { mutableStateOf<CalendarDay?>(null) }
 
     val monthName = JalaliCalendarEngine.PERSIAN_MONTH_NAMES.getOrElse(uiState.currentMonth - 1) { "" }
     val yearString = JalaliCalendarEngine.toPersianDigits(uiState.currentYear)
@@ -94,6 +100,25 @@ fun CalendarScreen(
             onDateSelected = { selectedDate ->
                 viewModel.setYearMonth(selectedDate.year, selectedDate.month)
                 showDatePickerDialog = false
+            }
+        )
+    }
+
+    activeBottomSheetDay?.let { day ->
+        OccasionDetailBottomSheet(
+            day = day,
+            onDismissRequest = { activeBottomSheetDay = null },
+            onViewDayDetail = {
+                activeBottomSheetDay = null
+                onDayDetailRequested(day.jalaliDate)
+            },
+            onAddEvent = {
+                activeBottomSheetDay = null
+                onAddEventRequested(day.jalaliDate)
+            },
+            onAddTask = {
+                activeBottomSheetDay = null
+                onAddTaskRequested(day.jalaliDate)
             }
         )
     }
@@ -113,73 +138,76 @@ fun CalendarScreen(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Add Task Action
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .clickable {
-                                    isFabExpanded = false
-                                    val targetDate = uiState.selectedDay?.jalaliDate ?: JalaliCalendarEngine.getTodayJalali()
-                                    onAddTaskRequested(targetDate)
-                                }
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        // Add Task Action (Glassy)
+                        GlassCard(
+                            backgroundColor = customColors.surfaceElevated.copy(alpha = 0.9f),
+                            borderColor = customColors.accentColor.copy(alpha = 0.35f),
+                            onClick = {
+                                isFabExpanded = false
+                                val targetDate = uiState.selectedDay?.jalaliDate ?: JalaliCalendarEngine.getTodayJalali()
+                                onAddTaskRequested(targetDate)
+                            }
                         ) {
-                            Text(
-                                text = "افزودن تسک",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                imageVector = Icons.Default.Checklist,
-                                contentDescription = null,
-                                tint = customColors.accentColor,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+                            ) {
+                                Text(
+                                    text = "افزودن تسک",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Checklist,
+                                    contentDescription = null,
+                                    tint = customColors.accentColor,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
 
-                        // Add Event Action
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .clickable {
-                                    isFabExpanded = false
-                                    val targetDate = uiState.selectedDay?.jalaliDate ?: JalaliCalendarEngine.getTodayJalali()
-                                    onAddEventRequested(targetDate)
-                                }
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        // Add Event Action (Glassy)
+                        GlassCard(
+                            backgroundColor = customColors.surfaceElevated.copy(alpha = 0.9f),
+                            borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                            onClick = {
+                                isFabExpanded = false
+                                val targetDate = uiState.selectedDay?.jalaliDate ?: JalaliCalendarEngine.getTodayJalali()
+                                onAddEventRequested(targetDate)
+                            }
                         ) {
-                            Text(
-                                text = "افزودن رویداد",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                imageVector = Icons.Default.Event,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+                            ) {
+                                Text(
+                                    text = "افزودن رویداد",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Event,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
                     }
                 }
 
-                FloatingActionButton(
-                    onClick = { isFabExpanded = !isFabExpanded },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White,
-                    shape = CircleShape
+                // Glass Floating Action Button
+                GlassFloatingActionButton(
+                    onClick = { isFabExpanded = !isFabExpanded }
                 ) {
                     Icon(
                         imageVector = if (isFabExpanded) Icons.Default.Close else Icons.Default.Add,
-                        contentDescription = "Add"
+                        contentDescription = "Add Action",
+                        tint = Color.White
                     )
                 }
             }
@@ -207,10 +235,25 @@ fun CalendarScreen(
                     )
                 }
         ) {
-            // 1. Top Header Bar
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 2.dp,
+            if (isFabExpanded) {
+                BackHandler { isFabExpanded = false }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { isFabExpanded = false }
+                )
+            }
+            
+            // 1. Glass Top Header Bar
+            GlassSurface(
+                shape = RoundedCornerShape(bottomStart = 22.dp, bottomEnd = 22.dp),
+                backgroundColor = Color.White.copy(alpha = 0.05f),
+                borderColor = Color.White.copy(alpha = 0.1f),
+                shadowElevation = 4.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -220,94 +263,95 @@ fun CalendarScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Month & Year Selector Trigger
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { showDatePickerDialog = true }
-                            .padding(horizontal = 8.dp, vertical = 6.dp)
+                    // Month & Year Selector Trigger (Glassy Pill)
+                    GlassCard(
+                        backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                        borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                        onClick = { showDatePickerDialog = true }
                     ) {
-                        Text(
-                            text = "$monthName $yearString",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Select month",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "$monthName $yearString",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Select month",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
 
                     // Navigation Actions (Prev, Next, Today)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        IconButton(
+                        GlassIconButton(
                             onClick = { viewModel.prevMonth() },
-                            modifier = Modifier.size(36.dp)
+                            size = 36.dp
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowForwardIos, // RTL: forward is previous
                                 contentDescription = "Previous Month",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
 
-                        // Today Button
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable { viewModel.jumpToToday() }
+                        // Today Button (Glassy)
+                        GlassButton(
+                            onClick = { viewModel.jumpToToday() },
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                            borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                            ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.CalendarToday,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(14.dp)
+                                    modifier = Modifier.size(13.dp)
                                 )
-                                Spacer(modifier = Modifier.width(6.dp))
+                                Spacer(modifier = Modifier.width(5.dp))
                                 Text(
                                     text = "امروز",
                                     color = MaterialTheme.colorScheme.primary,
-                                    fontSize = 12.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                         }
 
-                        IconButton(
+                        GlassIconButton(
                             onClick = { viewModel.nextMonth() },
-                            modifier = Modifier.size(36.dp)
+                            size = 36.dp
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBackIosNew, // RTL: back is next
                                 contentDescription = "Next Month",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
                 }
             }
 
+            Spacer(modifier = Modifier.height(10.dp))
+
             // 2. Weekday Header Row (شنبه تا جمعه)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
                 JalaliCalendarEngine.PERSIAN_WEEKDAY_NAMES_SHORT.forEachIndexed { index, name ->
@@ -344,18 +388,18 @@ fun CalendarScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // 4. Selected Day Preview Card
+            // 4. Selected Day Preview Card (Glassy)
             uiState.selectedDay?.let { selected ->
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    shadowElevation = 4.dp,
+                GlassCard(
+                    shape = RoundedCornerShape(22.dp),
+                    backgroundColor = Color.White.copy(alpha = 0.06f),
+                    borderColor = Color.White.copy(alpha = 0.12f),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
-                        .clickable { onDayDetailRequested(selected.jalaliDate) }
+                        .padding(horizontal = 14.dp, vertical = 4.dp),
+                    onClick = { activeBottomSheetDay = selected }
                 ) {
                     Column(
                         modifier = Modifier.padding(14.dp)
@@ -382,33 +426,33 @@ fun CalendarScreen(
                                             Text(
                                                 text = JalaliCalendarEngine.getFullGregorianDateString(selected.gregorianDate),
                                                 color = customColors.textMuted,
-                                                fontSize = 12.sp
+                                                fontSize = 11.sp
                                             )
                                         }
                                         if (uiState.userSettings.showGregorianDate && uiState.userSettings.showIslamicDate) {
                                             Text(
                                                 text = "  •  ",
                                                 color = customColors.textMuted,
-                                                fontSize = 12.sp
+                                                fontSize = 11.sp
                                             )
                                         }
                                         if (uiState.userSettings.showIslamicDate) {
                                             Text(
                                                 text = JalaliCalendarEngine.getFullIslamicDateString(selected.islamicDate),
                                                 color = customColors.textMuted,
-                                                fontSize = 12.sp
+                                                fontSize = 11.sp
                                             )
                                         }
                                     }
                                 }
                             }
 
-                            // View Details button
-                            OutlinedButton(
+                            // View Details button (Glassy)
+                            GlassOutlinedButton(
                                 onClick = { onDayDetailRequested(selected.jalaliDate) },
-                                shape = RoundedCornerShape(10.dp)
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text("جزئیات", fontSize = 12.sp)
+                                Text("جزئیات روز", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
 
@@ -430,7 +474,7 @@ fun CalendarScreen(
                                             text = occ.title,
                                             color = if (occ.isHoliday) customColors.holidayColor else MaterialTheme.colorScheme.onSurface,
                                             fontSize = 12.sp,
-                                            fontWeight = if (occ.isHoliday) FontWeight.Bold else FontWeight.Normal
+                                            fontWeight = if (occ.isHoliday) FontWeight.Bold else FontWeight.Medium
                                         )
                                     }
                                 }
@@ -441,7 +485,7 @@ fun CalendarScreen(
                         if (selected.eventCount > 0 || selected.taskCount > 0) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 if (selected.eventCount > 0) {
@@ -465,6 +509,8 @@ fun CalendarScreen(
                     }
                 }
             }
+            
+            Spacer(modifier = Modifier.height(86.dp)) // Prevent FAB overlap
         }
     }
 }

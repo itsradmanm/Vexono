@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,18 +25,17 @@ import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,6 +55,11 @@ import com.vexono.app.domain.model.JalaliDate
 import com.vexono.app.domain.model.Priority
 import com.vexono.app.domain.model.Task
 import com.vexono.app.presentation.components.EmptyStateView
+import com.vexono.app.presentation.components.GlassButton
+import com.vexono.app.presentation.components.GlassCard
+import com.vexono.app.presentation.components.GlassIconButton
+import com.vexono.app.presentation.components.GlassSurface
+import com.vexono.app.presentation.components.GlassTextField
 import com.vexono.app.presentation.components.PersianDatePickerDialog
 import com.vexono.app.presentation.components.PriorityBadge
 import com.vexono.app.presentation.theme.LocalCustomColors
@@ -88,9 +92,12 @@ fun TasksScreen(
 
     Scaffold(
         topBar = {
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 2.dp
+            GlassSurface(
+                shape = RoundedCornerShape(bottomStart = 22.dp, bottomEnd = 22.dp),
+                backgroundColor = Color.White.copy(alpha = 0.05f),
+                borderColor = Color.White.copy(alpha = 0.1f),
+                shadowElevation = 4.dp,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
                     modifier = Modifier
@@ -98,7 +105,7 @@ fun TasksScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     Text(
-                        text = "تسک‌های روزانه (To-Do)",
+                        text = "مدیریت تسک‌ها و وظایف (To-Do)",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -106,11 +113,11 @@ fun TasksScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Search input
-                    OutlinedTextField(
+                    // Glassy Search Input
+                    GlassTextField(
                         value = uiState.searchQuery,
                         onValueChange = { viewModel.setSearchQuery(it) },
-                        placeholder = { Text("جستجوی تسک‌ها...") },
+                        placeholder = "جستجوی وظایف و کارهای روزانه...",
                         leadingIcon = {
                             Icon(Icons.Default.Search, contentDescription = null, tint = customColors.textMuted)
                         },
@@ -121,33 +128,27 @@ fun TasksScreen(
                                 }
                             }
                         },
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Filter tabs
+                    // Filter tabs (Glassy Pills)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        FilterTab(
-                            title = "همه",
+                        GlassFilterTab(
+                            title = "همه وظایف",
                             isSelected = uiState.filter == TaskFilter.ALL,
                             onClick = { viewModel.setFilter(TaskFilter.ALL) }
                         )
-                        FilterTab(
+                        GlassFilterTab(
                             title = "در دست انجام",
                             isSelected = uiState.filter == TaskFilter.ACTIVE,
                             onClick = { viewModel.setFilter(TaskFilter.ACTIVE) }
                         )
-                        FilterTab(
+                        GlassFilterTab(
                             title = "تکمیل‌شده",
                             isSelected = uiState.filter == TaskFilter.COMPLETED,
                             onClick = { viewModel.setFilter(TaskFilter.COMPLETED) }
@@ -157,40 +158,40 @@ fun TasksScreen(
             }
         },
         bottomBar = {
-            // Fast Add Task Input Bar
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 8.dp
+            // Fast Add Task Input Bar with imePadding so it stays above keyboard
+            GlassSurface(
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                backgroundColor = customColors.surfaceElevated.copy(alpha = 0.95f),
+                borderColor = Color.White.copy(alpha = 0.14f),
+                shadowElevation = 12.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
+                Column(modifier = Modifier.padding(14.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        OutlinedTextField(
+                        GlassTextField(
                             value = newTaskTitle,
                             onValueChange = { newTaskTitle = it },
-                            placeholder = { Text("تسک جدید را بنویسید...") },
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                            ),
+                            placeholder = "تسک جدید را بنویسید...",
                             modifier = Modifier.weight(1f)
                         )
 
-                        Button(
+                        GlassButton(
                             onClick = {
                                 if (newTaskTitle.isNotBlank()) {
                                     viewModel.addTask(newTaskTitle, newTaskPriority, newTaskDate)
                                     newTaskTitle = ""
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.size(54.dp)
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                            borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 12.dp),
+                            modifier = Modifier.height(52.dp)
                         ) {
                             Icon(Icons.Default.Add, contentDescription = "افزودن تسک")
                         }
@@ -204,44 +205,51 @@ fun TasksScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Date selector chip
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .clickable { showDatePicker = true }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        // Date selector glass chip
+                        GlassCard(
+                            backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                            borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                            onClick = { showDatePicker = true }
                         ) {
-                            Icon(Icons.Default.CalendarToday, contentDescription = null, tint = customColors.accentColor, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "${JalaliCalendarEngine.toPersianDigits(newTaskDate.day)} ${JalaliCalendarEngine.PERSIAN_MONTH_NAMES.getOrElse(newTaskDate.month - 1) { "" }}",
-                                fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CalendarToday,
+                                    contentDescription = null,
+                                    tint = customColors.accentColor,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "${JalaliCalendarEngine.toPersianDigits(newTaskDate.day)} ${JalaliCalendarEngine.PERSIAN_MONTH_NAMES.getOrElse(newTaskDate.month - 1) { "" }}",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
 
-                        // Priority chips
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        // Priority selector glass chips
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             listOf(
                                 Priority.LOW to "پایین",
                                 Priority.MEDIUM to "متوسط",
                                 Priority.HIGH to "بالا"
                             ).forEach { (p, label) ->
                                 val isSelected = newTaskPriority == p
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                                        .clickable { newTaskPriority = p }
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                GlassCard(
+                                    backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f) else Color.White.copy(alpha = 0.05f),
+                                    borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.1f),
+                                    onClick = { newTaskPriority = p }
                                 ) {
                                     Text(
                                         text = label,
                                         fontSize = 11.sp,
                                         color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                                     )
                                 }
                             }
@@ -271,7 +279,7 @@ fun TasksScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(uiState.tasks, key = { it.id }) { task ->
-                    TaskCard(
+                    GlassTaskCard(
                         task = task,
                         onToggle = { isChecked -> viewModel.toggleTask(task.id, isChecked) },
                         onDelete = { viewModel.deleteTask(task.id) }
@@ -286,41 +294,88 @@ fun TasksScreen(
 }
 
 @Composable
-private fun FilterTab(
+private fun GlassFilterTab(
     title: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-            .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 6.dp)
+    GlassCard(
+        backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.05f),
+        borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.1f),
+        onClick = onClick
     ) {
         Text(
             text = title,
             fontSize = 12.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TaskCard(
+private fun GlassTaskCard(
     task: Task,
     onToggle: (Boolean) -> Unit,
     onDelete: () -> Unit
 ) {
     val customColors = LocalCustomColors.current
-    val taskDate = JalaliDate(task.jalaliYear, task.jalaliMonth, task.jalaliDay)
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { dismissValue ->
+            when (dismissValue) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    onToggle(!task.isCompleted)
+                    false // Don't actually dismiss the UI element, just toggle state
+                }
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onDelete()
+                    true // Dismiss and delete
+                }
+                else -> false
+            }
+        }
+    )
 
-    Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            val color = when (dismissState.dismissDirection) {
+                SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                SwipeToDismissBoxValue.EndToStart -> customColors.holidayColor.copy(alpha = 0.5f)
+                else -> Color.Transparent
+            }
+            val icon = when (dismissState.dismissDirection) {
+                SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Checklist
+                SwipeToDismissBoxValue.EndToStart -> Icons.Default.DeleteOutline
+                else -> null
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(color)
+                    .padding(horizontal = 20.dp),
+                contentAlignment = if (dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) Alignment.CenterStart else Alignment.CenterEnd
+            ) {
+                icon?.let {
+                    Icon(
+                        imageVector = it,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+        },
+        content = {
+            GlassCard(
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = if (task.isCompleted) Color.White.copy(alpha = 0.03f) else Color.White.copy(alpha = 0.07f),
+                borderColor = if (task.isCompleted) Color.White.copy(alpha = 0.06f) else Color.White.copy(alpha = 0.12f),
+                modifier = Modifier.fillMaxWidth()
+            ) {
         Row(
             modifier = Modifier
                 .padding(horizontal = 10.dp, vertical = 12.dp)
@@ -332,7 +387,7 @@ private fun TaskCard(
                 onCheckedChange = onToggle,
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             )
 
@@ -356,14 +411,23 @@ private fun TaskCard(
 
             PriorityBadge(priority = task.priority)
 
-            IconButton(onClick = onDelete) {
+            Spacer(modifier = Modifier.width(4.dp))
+
+            GlassIconButton(
+                onClick = onDelete,
+                size = 36.dp,
+                containerColor = customColors.holidayColor.copy(alpha = 0.1f),
+                borderColor = customColors.holidayColor.copy(alpha = 0.25f)
+            ) {
                 Icon(
                     imageVector = Icons.Default.DeleteOutline,
                     contentDescription = "حذف تسک",
                     tint = customColors.holidayColor,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
             }
+            }
         }
-    }
+        }
+    )
 }

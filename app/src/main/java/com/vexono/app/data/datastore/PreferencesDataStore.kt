@@ -22,6 +22,7 @@ class PreferencesDataStore(private val context: Context) {
         val SHOW_GREGORIAN_DATE = booleanPreferencesKey("show_gregorian_date")
         val SHOW_ISLAMIC_DATE = booleanPreferencesKey("show_islamic_date")
         val ENABLE_NOTIFICATIONS = booleanPreferencesKey("enable_notifications")
+        val ENABLE_PERSISTENT_NOTIFICATION = booleanPreferencesKey("enable_persistent_notification")
     }
 
     val userSettingsFlow: Flow<UserSettings> = context.dataStore.data.map { preferences ->
@@ -31,13 +32,15 @@ class PreferencesDataStore(private val context: Context) {
         val showGregorian = preferences[Keys.SHOW_GREGORIAN_DATE] ?: true
         val showIslamic = preferences[Keys.SHOW_ISLAMIC_DATE] ?: true
         val enableNotifications = preferences[Keys.ENABLE_NOTIFICATIONS] ?: true
+        val enablePersistentNotification = preferences[Keys.ENABLE_PERSISTENT_NOTIFICATION] ?: false
 
         UserSettings(
             themeMode = themeMode,
             primaryColorHex = primaryColorHex,
             showGregorianDate = showGregorian,
             showIslamicDate = showIslamic,
-            enableNotifications = enableNotifications
+            enableNotifications = enableNotifications,
+            enablePersistentNotification = enablePersistentNotification
         )
     }
 
@@ -68,6 +71,12 @@ class PreferencesDataStore(private val context: Context) {
     suspend fun updateEnableNotifications(enable: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[Keys.ENABLE_NOTIFICATIONS] = enable
+        }
+    }
+
+    suspend fun updateEnablePersistentNotification(enable: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[Keys.ENABLE_PERSISTENT_NOTIFICATION] = enable
         }
     }
 }
