@@ -100,6 +100,19 @@
                 android:resource="@xml/vexono_widget_agenda_info" />
         </receiver>
 
+        <!-- Upcoming Events (4×2) Widget Provider -->
+        <receiver
+            android:name=".data.widget.VexonoEventsWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_events_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/vexono_widget_events_info" />
+        </receiver>
+
         <!-- Midnight Update Receiver (date changes, boot, timezone) -->
         <receiver
             android:name=".data.widget.MidnightUpdateReceiver"

@@ -21,15 +21,12 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 /**
- * Main widget provider for all Vexono home screen widgets.
- * Supports three widget types identified by their layout:
- *   - Original (2×2): widget_vexono_today
- *   - Bar (2×1):      widget_vexono_bar
- *   - Square (2×2):   widget_vexono_square
- *   - Agenda (4×2):   widget_vexono_agenda
- *
- * All widgets update on every APPWIDGET_UPDATE broadcast, as well as on
- * ACTION_DATE_CHANGED and TIMEZONE_CHANGED (via MidnightUpdateReceiver).
+ * Samsung One UI style widget providers for Vexono:
+ *   - VexonoWidgetProvider:       2×2 Month Grid (Image 1)
+ *   - VexonoBarWidgetProvider:    2×1 Today Pill (Image 2)
+ *   - VexonoSquareWidgetProvider: 2×2 Today Minimal (Image 2)
+ *   - VexonoAgendaWidgetProvider: 4×2 Month Grid + Agenda (Image 2)
+ *   - VexonoEventsWidgetProvider: 4×2 Upcoming Events List (Image 3)
  */
 class VexonoWidgetProvider : AppWidgetProvider() {
 
@@ -45,257 +42,39 @@ class VexonoWidgetProvider : AppWidgetProvider() {
 
     override fun onEnabled(context: Context) {
         super.onEnabled(context)
-        // Schedule the midnight update receiver when first widget is added
         MidnightUpdateReceiver.schedule(context)
     }
 
     override fun onDisabled(context: Context) {
         super.onDisabled(context)
-        // Cancel the midnight update receiver when last widget is removed
         MidnightUpdateReceiver.cancel(context)
     }
 
     companion object {
         private const val TAG = "VexonoWidget"
 
+        // ==========================================
+        // 1. Month Grid Widget (2×2) - Image 1
+        // ==========================================
         fun updateAppWidget(
             context: Context,
             appWidgetManager: AppWidgetManager,
             appWidgetId: Int
         ) {
             val todayJalali = JalaliCalendarEngine.getTodayJalali()
-            val todayGregorian = JalaliCalendarEngine.jalaliToGregorian(todayJalali)
-            val dayOfWeekIndex = JalaliCalendarEngine.getDayOfWeek(todayJalali)
-
-            val weekdayName = JalaliCalendarEngine.PERSIAN_WEEKDAY_NAMES.getOrElse(dayOfWeekIndex) { "" }
             val monthName = JalaliCalendarEngine.PERSIAN_MONTH_NAMES.getOrElse(todayJalali.month - 1) { "" }
-            val dayNumberPersian = JalaliCalendarEngine.toPersianDigits(todayJalali.day)
-            val yearPersian = JalaliCalendarEngine.toPersianDigits(todayJalali.year)
-            val gregorianFormatted = JalaliCalendarEngine.getFullGregorianDateString(todayGregorian)
 
-            // Get the widget info to determine which layout it's using
-            // We try all layouts and catch exceptions gracefully
-            // This approach creates RemoteViews for the originally-registered layout
-            val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
-            val maxWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 140)
-
-            // Determine widget layout based on options width (heuristic)
-            // The actual layout is determined when the widget is placed, so we handle all known types
-            tryUpdateWithLayout(context, appWidgetManager, appWidgetId, R.layout.widget_vexono_today) { views ->
-                fillTodayWidget(views, weekdayName, yearPersian, dayNumberPersian, monthName, gregorianFormatted)
-                pendingIntent(context, 0).also { views.setOnClickPendingIntent(R.id.widget_root, it) }
-                fetchAndFillOccasionToday(context, todayJalali, appWidgetManager, appWidgetId, views)
-            }
-        }
-
-        private fun tryUpdateWithLayout(
-            context: Context,
-            appWidgetManager: AppWidgetManager,
-            appWidgetId: Int,
-            layoutResId: Int,
-            fill: (RemoteViews) -> Unit
-        ) {
-            try {
-                val views = RemoteViews(context.packageName, layoutResId)
-                fill(views)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error updating widget $appWidgetId with layout $layoutResId", e)
-            }
-        }
-
-        // -- Fill functions for each widget type --
-
-        private fun fillTodayWidget(
-            views: RemoteViews,
-            weekdayName: String,
-            yearPersian: String,
-            dayNumberPersian: String,
-            monthName: String,
-            gregorianFormatted: String
-        ) {
-            views.setTextViewText(R.id.widget_weekday, weekdayName)
-            views.setTextViewText(R.id.widget_year, yearPersian)
-            views.setTextViewText(R.id.widget_day_number, dayNumberPersian)
-            views.setTextViewText(R.id.widget_month_name, monthName)
-            views.setTextViewText(R.id.widget_gregorian_date, gregorianFormatted)
-        }
-
-        private fun fillBarWidget(
-            views: RemoteViews,
-            weekdayName: String,
-            dayNumberPersian: String,
-            monthName: String
-        ) {
-            views.setTextViewText(R.id.bar_day_number, dayNumberPersian)
-            views.setTextViewText(R.id.bar_month_name, monthName)
-            views.setTextViewText(R.id.bar_weekday, weekdayName)
-        }
-
-        private fun fillSquareWidget(
-            views: RemoteViews,
-            weekdayName: String,
-            yearPersian: String,
-            dayNumberPersian: String,
-            monthName: String,
-            gregorianFormatted: String
-        ) {
-            views.setTextViewText(R.id.square_weekday, weekdayName)
-            views.setTextViewText(R.id.square_year, yearPersian)
-            views.setTextViewText(R.id.square_day_number, dayNumberPersian)
-            views.setTextViewText(R.id.square_month_name, monthName)
-            views.setTextViewText(R.id.square_gregorian_date, gregorianFormatted)
-        }
-
-        private fun fillAgendaWidget(
-            views: RemoteViews,
-            weekdayName: String,
-            yearPersian: String,
-            dayNumberPersian: String,
-            monthName: String
-        ) {
-            views.setTextViewText(R.id.agenda_weekday, weekdayName)
-            views.setTextViewText(R.id.agenda_year, yearPersian)
-            views.setTextViewText(R.id.agenda_day_number, dayNumberPersian)
-            views.setTextViewText(R.id.agenda_month_name, monthName)
-        }
-
-        private fun fetchAndFillOccasionToday(
-            context: Context,
-            todayJalali: com.vexono.app.domain.model.JalaliDate,
-            appWidgetManager: AppWidgetManager,
-            appWidgetId: Int,
-            views: RemoteViews
-        ) {
-            val scope = CoroutineScope(Dispatchers.IO)
-            scope.launch {
-                try {
-                    val db = VexonoDatabase.getDatabase(context)
-                    val occasions = db.occasionDao().getOccasionsForDay(
-                        todayJalali.year,
-                        todayJalali.month,
-                        todayJalali.day
-                    ).firstOrNull()
-
-                    if (!occasions.isNullOrEmpty()) {
-                        val occasion = occasions.first()
-                        views.setViewVisibility(R.id.widget_occasion, View.VISIBLE)
-                        views.setTextViewText(R.id.widget_occasion, occasion.title)
-                        if (occasion.isHoliday) {
-                            views.setTextColor(R.id.widget_day_number, 0xFFFF5C7A.toInt())
-                        } else {
-                            views.setTextColor(R.id.widget_day_number, 0xFFF5F5F7.toInt())
-                        }
-                    } else {
-                        views.setViewVisibility(R.id.widget_occasion, View.GONE)
-                        views.setTextColor(R.id.widget_day_number, 0xFFF5F5F7.toInt())
-                    }
-
-                    // Also fetch today's events and tasks
-                    val events = db.eventDao().getEventsForDay(
-                        todayJalali.year,
-                        todayJalali.month,
-                        todayJalali.day
-                    ).firstOrNull()
-
-                    appWidgetManager.updateAppWidget(appWidgetId, views)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error fetching occasion data for widget", e)
-                    appWidgetManager.updateAppWidget(appWidgetId, views)
-                }
-            }
-
-            // Do an immediate update without occasions (overridden by coroutine above)
-            appWidgetManager.updateAppWidget(appWidgetId, views)
-        }
-
-        private fun fetchAndFillAgendaData(
-            context: Context,
-            todayJalali: com.vexono.app.domain.model.JalaliDate,
-            appWidgetManager: AppWidgetManager,
-            appWidgetId: Int,
-            views: RemoteViews
-        ) {
-            val scope = CoroutineScope(Dispatchers.IO)
-            scope.launch {
-                try {
-                    val db = VexonoDatabase.getDatabase(context)
-
-                    // Occasions
-                    val occasions = db.occasionDao().getOccasionsForDay(
-                        todayJalali.year, todayJalali.month, todayJalali.day
-                    ).firstOrNull()
-
-                    if (!occasions.isNullOrEmpty()) {
-                        val occ = occasions.first()
-                        views.setViewVisibility(R.id.agenda_occasion, View.VISIBLE)
-                        views.setTextViewText(R.id.agenda_occasion, occ.title)
-                    } else {
-                        views.setViewVisibility(R.id.agenda_occasion, View.GONE)
-                    }
-
-                    // Events (show up to 2)
-                    val events = db.eventDao().getEventsForDay(
-                        todayJalali.year, todayJalali.month, todayJalali.day
-                    ).firstOrNull() ?: emptyList()
-
-                    if (events.isNotEmpty()) {
-                        views.setViewVisibility(R.id.agenda_empty, View.GONE)
-
-                        val event1 = events.getOrNull(0)
-                        if (event1 != null) {
-                            views.setViewVisibility(R.id.agenda_event_1_row, View.VISIBLE)
-                            views.setTextViewText(R.id.agenda_event_1_title, event1.title)
-                            views.setTextViewText(
-                                R.id.agenda_event_1_time,
-                                "${JalaliCalendarEngine.toPersianDigits(String.format("%02d", event1.hour))}:${JalaliCalendarEngine.toPersianDigits(String.format("%02d", event1.minute))}"
-                            )
-                            try {
-                                val eventColor = Color.parseColor(event1.colorHex)
-                                views.setInt(R.id.agenda_event_1_color, "setBackgroundColor", eventColor)
-                            } catch (e: Exception) { /* ignore */ }
-                        }
-
-                        val event2 = events.getOrNull(1)
-                        if (event2 != null) {
-                            views.setViewVisibility(R.id.agenda_event_2_row, View.VISIBLE)
-                            views.setTextViewText(R.id.agenda_event_2_title, event2.title)
-                            views.setTextViewText(
-                                R.id.agenda_event_2_time,
-                                "${JalaliCalendarEngine.toPersianDigits(String.format("%02d", event2.hour))}:${JalaliCalendarEngine.toPersianDigits(String.format("%02d", event2.minute))}"
-                            )
-                            try {
-                                val eventColor2 = Color.parseColor(event2.colorHex)
-                                views.setInt(R.id.agenda_event_2_color, "setBackgroundColor", eventColor2)
-                            } catch (e: Exception) { /* ignore */ }
-                        }
-                    } else if (occasions.isNullOrEmpty()) {
-                        views.setViewVisibility(R.id.agenda_empty, View.VISIBLE)
-                    }
-
-                    // Tasks count
-                    val tasks = db.taskDao().getTasksForDay(
-                        todayJalali.year, todayJalali.month, todayJalali.day
-                    ).firstOrNull() ?: emptyList()
-
-                    if (tasks.isNotEmpty()) {
-                        val completed = tasks.count { it.isCompleted }
-                        views.setViewVisibility(R.id.agenda_task_summary, View.VISIBLE)
-                        views.setTextViewText(
-                            R.id.agenda_task_summary,
-                            "✅ ${JalaliCalendarEngine.toPersianDigits(completed)} از ${JalaliCalendarEngine.toPersianDigits(tasks.size)} تسک"
-                        )
-                    }
-
-                    appWidgetManager.updateAppWidget(appWidgetId, views)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error fetching agenda data for widget", e)
-                    appWidgetManager.updateAppWidget(appWidgetId, views)
-                }
-            }
+            val views = RemoteViews(context.packageName, R.layout.widget_vexono_today)
+            views.setTextViewText(R.id.widget_month_name, "$monthName ${JalaliCalendarEngine.toPersianDigits(todayJalali.year)}")
+            fillMonthGridCells(context, views, todayJalali, "m_cell")
+            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent(context, 0))
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
 
+        // ==========================================
+        // 2. Bar Pill Widget (2×1) - Image 2
+        // ==========================================
         fun updateBarWidget(
             context: Context,
             appWidgetManager: AppWidgetManager,
@@ -308,49 +87,12 @@ class VexonoWidgetProvider : AppWidgetProvider() {
             val dayNumberPersian = JalaliCalendarEngine.toPersianDigits(todayJalali.day)
 
             val views = RemoteViews(context.packageName, R.layout.widget_vexono_bar)
-            fillBarWidget(views, weekdayName, dayNumberPersian, monthName)
+            views.setTextViewText(R.id.bar_day_number, dayNumberPersian)
+            views.setTextViewText(R.id.bar_month_name, monthName)
+            views.setTextViewText(R.id.bar_weekday, weekdayName)
             views.setOnClickPendingIntent(R.id.widget_bar_root, pendingIntent(context, 1))
 
-            // Fetch occasion to set holiday color
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val db = VexonoDatabase.getDatabase(context)
-                    val occasions = db.occasionDao().getOccasionsForDay(
-                        todayJalali.year, todayJalali.month, todayJalali.day
-                    ).firstOrNull()
-
-                    if (!occasions.isNullOrEmpty() && occasions.first().isHoliday) {
-                        views.setTextColor(R.id.bar_day_number, 0xFFFF5C7A.toInt())
-                        views.setViewVisibility(R.id.bar_occasion, View.VISIBLE)
-                        views.setTextViewText(R.id.bar_occasion, occasions.first().title)
-                    }
-                    appWidgetManager.updateAppWidget(appWidgetId, views)
-                } catch (e: Exception) {
-                    appWidgetManager.updateAppWidget(appWidgetId, views)
-                }
-            }
-
-            appWidgetManager.updateAppWidget(appWidgetId, views)
-        }
-
-        fun updateSquareWidget(
-            context: Context,
-            appWidgetManager: AppWidgetManager,
-            appWidgetId: Int
-        ) {
-            val todayJalali = JalaliCalendarEngine.getTodayJalali()
-            val todayGregorian = JalaliCalendarEngine.jalaliToGregorian(todayJalali)
-            val dayOfWeekIndex = JalaliCalendarEngine.getDayOfWeek(todayJalali)
-            val weekdayName = JalaliCalendarEngine.PERSIAN_WEEKDAY_NAMES.getOrElse(dayOfWeekIndex) { "" }
-            val monthName = JalaliCalendarEngine.PERSIAN_MONTH_NAMES.getOrElse(todayJalali.month - 1) { "" }
-            val dayNumberPersian = JalaliCalendarEngine.toPersianDigits(todayJalali.day)
-            val yearPersian = JalaliCalendarEngine.toPersianDigits(todayJalali.year)
-            val gregorianFormatted = JalaliCalendarEngine.getFullGregorianDateString(todayGregorian)
-
-            val views = RemoteViews(context.packageName, R.layout.widget_vexono_square)
-            fillSquareWidget(views, weekdayName, yearPersian, dayNumberPersian, monthName, gregorianFormatted)
-            views.setOnClickPendingIntent(R.id.widget_square_root, pendingIntent(context, 2))
-
+            // Fetch occasion in background
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val db = VexonoDatabase.getDatabase(context)
@@ -359,51 +101,24 @@ class VexonoWidgetProvider : AppWidgetProvider() {
                     ).firstOrNull()
 
                     if (!occasions.isNullOrEmpty()) {
-                        val occ = occasions.first()
-                        views.setViewVisibility(R.id.square_occasion, View.VISIBLE)
-                        views.setTextViewText(R.id.square_occasion, occ.title)
-                        if (occ.isHoliday) {
-                            views.setTextColor(R.id.square_day_number, 0xFFFF5C7A.toInt())
-                        }
+                        views.setViewVisibility(R.id.bar_occasion, View.VISIBLE)
+                        views.setTextViewText(R.id.bar_occasion, occasions.first().title)
                     } else {
-                        views.setViewVisibility(R.id.square_occasion, View.GONE)
+                        views.setViewVisibility(R.id.bar_occasion, View.GONE)
                     }
-
-                    val events = db.eventDao().getEventsForDay(
-                        todayJalali.year, todayJalali.month, todayJalali.day
-                    ).firstOrNull() ?: emptyList()
-
-                    val tasks = db.taskDao().getTasksForDay(
-                        todayJalali.year, todayJalali.month, todayJalali.day
-                    ).firstOrNull() ?: emptyList()
-
-                    if (events.isNotEmpty()) {
-                        views.setViewVisibility(R.id.square_event_count, View.VISIBLE)
-                        views.setTextViewText(
-                            R.id.square_event_count,
-                            "📅 ${JalaliCalendarEngine.toPersianDigits(events.size)} رویداد"
-                        )
-                    }
-
-                    if (tasks.isNotEmpty()) {
-                        views.setViewVisibility(R.id.square_task_count, View.VISIBLE)
-                        val completed = tasks.count { it.isCompleted }
-                        views.setTextViewText(
-                            R.id.square_task_count,
-                            "✅ ${JalaliCalendarEngine.toPersianDigits(completed)}/${JalaliCalendarEngine.toPersianDigits(tasks.size)}"
-                        )
-                    }
-
                     appWidgetManager.updateAppWidget(appWidgetId, views)
                 } catch (e: Exception) {
-                    appWidgetManager.updateAppWidget(appWidgetId, views)
+                    Log.e(TAG, "Error fetching occasion for bar widget", e)
                 }
             }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
 
-        fun updateAgendaWidget(
+        // ==========================================
+        // 3. Square Minimal Widget (2×2) - Image 2
+        // ==========================================
+        fun updateSquareWidget(
             context: Context,
             appWidgetManager: AppWidgetManager,
             appWidgetId: Int
@@ -415,54 +130,278 @@ class VexonoWidgetProvider : AppWidgetProvider() {
             val dayNumberPersian = JalaliCalendarEngine.toPersianDigits(todayJalali.day)
             val yearPersian = JalaliCalendarEngine.toPersianDigits(todayJalali.year)
 
+            val views = RemoteViews(context.packageName, R.layout.widget_vexono_square)
+            views.setTextViewText(R.id.square_month_year, "$monthName $yearPersian")
+            views.setTextViewText(R.id.square_day_number, dayNumberPersian)
+            views.setTextViewText(R.id.square_weekday, weekdayName)
+            views.setOnClickPendingIntent(R.id.widget_square_root, pendingIntent(context, 2))
+
+            // Fetch occasion in background
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val db = VexonoDatabase.getDatabase(context)
+                    val occasions = db.occasionDao().getOccasionsForDay(
+                        todayJalali.year, todayJalali.month, todayJalali.day
+                    ).firstOrNull()
+
+                    if (!occasions.isNullOrEmpty()) {
+                        views.setViewVisibility(R.id.square_occasion, View.VISIBLE)
+                        views.setTextViewText(R.id.square_occasion, occasions.first().title)
+                    } else {
+                        views.setViewVisibility(R.id.square_occasion, View.GONE)
+                    }
+                    appWidgetManager.updateAppWidget(appWidgetId, views)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error fetching occasion for square widget", e)
+                }
+            }
+
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
+
+        // ==========================================
+        // 4. Agenda Widget (4×2 Month + Events) - Image 2
+        // ==========================================
+        fun updateAgendaWidget(
+            context: Context,
+            appWidgetManager: AppWidgetManager,
+            appWidgetId: Int
+        ) {
+            val todayJalali = JalaliCalendarEngine.getTodayJalali()
+            val monthName = JalaliCalendarEngine.PERSIAN_MONTH_NAMES.getOrElse(todayJalali.month - 1) { "" }
+            val dayNumberPersian = JalaliCalendarEngine.toPersianDigits(todayJalali.day)
+
             val views = RemoteViews(context.packageName, R.layout.widget_vexono_agenda)
-            fillAgendaWidget(views, weekdayName, yearPersian, dayNumberPersian, monthName)
+
+            // Fill left calendar grid
+            fillMonthGridCells(context, views, todayJalali, "ag_c")
+
+            // Right header
+            views.setTextViewText(R.id.ag_header_date, "$dayNumberPersian $monthName")
             views.setOnClickPendingIntent(R.id.widget_agenda_root, pendingIntent(context, 3))
-            fetchAndFillAgendaData(context, todayJalali, appWidgetManager, appWidgetId, views)
+            views.setOnClickPendingIntent(R.id.ag_btn_add, pendingIntent(context, 3))
+
+            // Fetch events in background
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val db = VexonoDatabase.getDatabase(context)
+                    val events = db.eventDao().getEventsForDay(
+                        todayJalali.year, todayJalali.month, todayJalali.day
+                    ).firstOrNull() ?: emptyList()
+
+                    val tasks = db.taskDao().getAllTasks().firstOrNull()
+                        ?.filter { !it.isCompleted }
+                        ?: emptyList()
+
+                    if (events.isEmpty() && tasks.isEmpty()) {
+                        views.setViewVisibility(R.id.ag_empty_layout, View.VISIBLE)
+                        views.setViewVisibility(R.id.ag_events_layout, View.GONE)
+                    } else {
+                        views.setViewVisibility(R.id.ag_empty_layout, View.GONE)
+                        views.setViewVisibility(R.id.ag_events_layout, View.VISIBLE)
+
+                        if (events.isNotEmpty()) {
+                            val ev1 = events[0]
+                            views.setViewVisibility(R.id.ag_item1, View.VISIBLE)
+                            views.setTextViewText(R.id.ag_item1_title, ev1.title)
+                            val timeStr = "${JalaliCalendarEngine.toPersianDigits(String.format("%02d", ev1.hour))}:${JalaliCalendarEngine.toPersianDigits(String.format("%02d", ev1.minute))}"
+                            views.setTextViewText(R.id.ag_item1_time, timeStr)
+                        } else if (tasks.isNotEmpty()) {
+                            val t1 = tasks[0]
+                            views.setViewVisibility(R.id.ag_item1, View.VISIBLE)
+                            views.setTextViewText(R.id.ag_item1_title, t1.title)
+                            views.setTextViewText(R.id.ag_item1_time, "وظیفه روز")
+                        } else {
+                            views.setViewVisibility(R.id.ag_item1, View.GONE)
+                        }
+
+                        if (events.size > 1) {
+                            val ev2 = events[1]
+                            views.setViewVisibility(R.id.ag_item2, View.VISIBLE)
+                            views.setTextViewText(R.id.ag_item2_title, ev2.title)
+                            val timeStr = "${JalaliCalendarEngine.toPersianDigits(String.format("%02d", ev2.hour))}:${JalaliCalendarEngine.toPersianDigits(String.format("%02d", ev2.minute))}"
+                            views.setTextViewText(R.id.ag_item2_time, timeStr)
+                        } else if (events.size == 1 && tasks.isNotEmpty()) {
+                            val t1 = tasks[0]
+                            views.setViewVisibility(R.id.ag_item2, View.VISIBLE)
+                            views.setTextViewText(R.id.ag_item2_title, t1.title)
+                            views.setTextViewText(R.id.ag_item2_time, "وظیفه")
+                        } else {
+                            views.setViewVisibility(R.id.ag_item2, View.GONE)
+                        }
+                    }
+
+                    appWidgetManager.updateAppWidget(appWidgetId, views)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error fetching agenda data", e)
+                }
+            }
+
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
+
+        // ==========================================
+        // 5. Events Widget (4×2 List) - Image 3
+        // ==========================================
+        fun updateEventsWidget(
+            context: Context,
+            appWidgetManager: AppWidgetManager,
+            appWidgetId: Int
+        ) {
+            val todayJalali = JalaliCalendarEngine.getTodayJalali()
+            val dayOfWeekIndex = JalaliCalendarEngine.getDayOfWeek(todayJalali)
+            val weekdayName = JalaliCalendarEngine.PERSIAN_WEEKDAY_NAMES.getOrElse(dayOfWeekIndex) { "" }
+            val monthName = JalaliCalendarEngine.PERSIAN_MONTH_NAMES.getOrElse(todayJalali.month - 1) { "" }
+            val dayNumberPersian = JalaliCalendarEngine.toPersianDigits(todayJalali.day)
+
+            val views = RemoteViews(context.packageName, R.layout.widget_vexono_events)
+            views.setTextViewText(
+                R.id.events_header_title,
+                "امروز، $weekdayName $dayNumberPersian $monthName"
+            )
+            views.setOnClickPendingIntent(R.id.widget_events_root, pendingIntent(context, 4))
+            views.setOnClickPendingIntent(R.id.events_btn_add, pendingIntent(context, 4))
+
+            // Fetch events and occasions in background
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val db = VexonoDatabase.getDatabase(context)
+                    val occasions = db.occasionDao().getOccasionsForDay(
+                        todayJalali.year, todayJalali.month, todayJalali.day
+                    ).firstOrNull() ?: emptyList()
+
+                    val events = db.eventDao().getEventsForDay(
+                        todayJalali.year, todayJalali.month, todayJalali.day
+                    ).firstOrNull() ?: emptyList()
+
+                    val tasks = db.taskDao().getAllTasks().firstOrNull()
+                        ?.filter { !it.isCompleted }
+                        ?: emptyList()
+
+                    // Combine into items
+                    data class DisplayItem(val title: String, val time: String, val icon: String)
+                    val items = mutableListOf<DisplayItem>()
+
+                    for (occ in occasions.take(1)) {
+                        items.add(DisplayItem(occ.title, "مناسبت امروز", "🎉"))
+                    }
+                    for (ev in events) {
+                        val timeStr = "${JalaliCalendarEngine.toPersianDigits(String.format("%02d", ev.hour))}:${JalaliCalendarEngine.toPersianDigits(String.format("%02d", ev.minute))}"
+                        items.add(DisplayItem(ev.title, timeStr, "📅"))
+                    }
+                    for (task in tasks) {
+                        items.add(DisplayItem(task.title, "وظیفه", "✅"))
+                    }
+
+                    if (items.isEmpty()) {
+                        views.setViewVisibility(R.id.events_empty_text, View.VISIBLE)
+                        views.setViewVisibility(R.id.events_list_container, View.GONE)
+                    } else {
+                        views.setViewVisibility(R.id.events_empty_text, View.GONE)
+                        views.setViewVisibility(R.id.events_list_container, View.VISIBLE)
+
+                        // Item 1
+                        if (items.isNotEmpty()) {
+                            views.setViewVisibility(R.id.ev_row_1, View.VISIBLE)
+                            views.setTextViewText(R.id.ev_title_1, items[0].title)
+                            views.setTextViewText(R.id.ev_time_1, items[0].time)
+                            views.setTextViewText(R.id.ev_icon_1, items[0].icon)
+                        } else {
+                            views.setViewVisibility(R.id.ev_row_1, View.GONE)
+                        }
+
+                        // Item 2
+                        if (items.size > 1) {
+                            views.setViewVisibility(R.id.ev_div_1, View.VISIBLE)
+                            views.setViewVisibility(R.id.ev_row_2, View.VISIBLE)
+                            views.setTextViewText(R.id.ev_title_2, items[1].title)
+                            views.setTextViewText(R.id.ev_time_2, items[1].time)
+                            views.setTextViewText(R.id.ev_icon_2, items[1].icon)
+                        } else {
+                            views.setViewVisibility(R.id.ev_div_1, View.GONE)
+                            views.setViewVisibility(R.id.ev_row_2, View.GONE)
+                        }
+
+                        // Item 3
+                        if (items.size > 2) {
+                            views.setViewVisibility(R.id.ev_div_2, View.VISIBLE)
+                            views.setViewVisibility(R.id.ev_row_3, View.VISIBLE)
+                            views.setTextViewText(R.id.ev_title_3, items[2].title)
+                            views.setTextViewText(R.id.ev_time_3, items[2].time)
+                            views.setTextViewText(R.id.ev_icon_3, items[2].icon)
+                        } else {
+                            views.setViewVisibility(R.id.ev_div_2, View.GONE)
+                            views.setViewVisibility(R.id.ev_row_3, View.GONE)
+                        }
+                    }
+
+                    appWidgetManager.updateAppWidget(appWidgetId, views)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error fetching events widget data", e)
+                }
+            }
+
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
+
+        // Helper: Fills a 6-row x 7-column month grid in RemoteViews
+        private fun fillMonthGridCells(
+            context: Context,
+            views: RemoteViews,
+            todayJalali: com.vexono.app.domain.model.JalaliDate,
+            prefix: String
+        ) {
+            val firstDayOfMonth = com.vexono.app.domain.model.JalaliDate(todayJalali.year, todayJalali.month, 1)
+            val startDayOfWeek = JalaliCalendarEngine.getDayOfWeek(firstDayOfMonth) // 0=Sat..6=Fri
+            val daysInMonth = JalaliCalendarEngine.getDaysInJalaliMonth(todayJalali.year, todayJalali.month)
+
+            for (i in 0 until 42) {
+                val r = i / 7
+                val c = i % 7
+                val resIdName = if (prefix == "m_cell") "${prefix}_${r}_${c}" else "${prefix}${r}_${c}"
+                val resId = context.resources.getIdentifier(resIdName, "id", context.packageName)
+                if (resId == 0) continue
+
+                val dayNumber = i - startDayOfWeek + 1
+                if (dayNumber in 1..daysInMonth) {
+                    views.setTextViewText(resId, JalaliCalendarEngine.toPersianDigits(dayNumber))
+                    if (dayNumber == todayJalali.day) {
+                        views.setInt(resId, "setBackgroundResource", R.drawable.widget_today_circle)
+                        views.setTextColor(resId, Color.BLACK)
+                    } else {
+                        views.setInt(resId, "setBackgroundColor", Color.TRANSPARENT)
+                        val color = if (c == 6) Color.parseColor("#FF5252") else Color.parseColor("#E0E0E6")
+                        views.setTextColor(resId, color)
+                    }
+                } else {
+                    views.setTextViewText(resId, "")
+                    views.setInt(resId, "setBackgroundColor", Color.TRANSPARENT)
+                }
+            }
         }
 
         fun sendUpdateBroadcast(context: Context) {
-            // Update original/today widget
-            val intent = Intent(context, VexonoWidgetProvider::class.java).apply {
-                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-            }
-            val ids = AppWidgetManager.getInstance(context)
-                .getAppWidgetIds(ComponentName(context, VexonoWidgetProvider::class.java))
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-            context.sendBroadcast(intent)
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+
+            // Update month widget
+            val todayIds = appWidgetManager.getAppWidgetIds(ComponentName(context, VexonoWidgetProvider::class.java))
+            for (id in todayIds) updateAppWidget(context, appWidgetManager, id)
 
             // Update bar widget
-            val barIds = AppWidgetManager.getInstance(context)
-                .getAppWidgetIds(ComponentName(context, VexonoBarWidgetProvider::class.java))
-            if (barIds.isNotEmpty()) {
-                val barIntent = Intent(context, VexonoBarWidgetProvider::class.java).apply {
-                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, barIds)
-                }
-                context.sendBroadcast(barIntent)
-            }
+            val barIds = appWidgetManager.getAppWidgetIds(ComponentName(context, VexonoBarWidgetProvider::class.java))
+            for (id in barIds) updateBarWidget(context, appWidgetManager, id)
 
             // Update square widget
-            val squareIds = AppWidgetManager.getInstance(context)
-                .getAppWidgetIds(ComponentName(context, VexonoSquareWidgetProvider::class.java))
-            if (squareIds.isNotEmpty()) {
-                val squareIntent = Intent(context, VexonoSquareWidgetProvider::class.java).apply {
-                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, squareIds)
-                }
-                context.sendBroadcast(squareIntent)
-            }
+            val squareIds = appWidgetManager.getAppWidgetIds(ComponentName(context, VexonoSquareWidgetProvider::class.java))
+            for (id in squareIds) updateSquareWidget(context, appWidgetManager, id)
 
             // Update agenda widget
-            val agendaIds = AppWidgetManager.getInstance(context)
-                .getAppWidgetIds(ComponentName(context, VexonoAgendaWidgetProvider::class.java))
-            if (agendaIds.isNotEmpty()) {
-                val agendaIntent = Intent(context, VexonoAgendaWidgetProvider::class.java).apply {
-                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, agendaIds)
-                }
-                context.sendBroadcast(agendaIntent)
-            }
+            val agendaIds = appWidgetManager.getAppWidgetIds(ComponentName(context, VexonoAgendaWidgetProvider::class.java))
+            for (id in agendaIds) updateAgendaWidget(context, appWidgetManager, id)
+
+            // Update events widget
+            val eventIds = appWidgetManager.getAppWidgetIds(ComponentName(context, VexonoEventsWidgetProvider::class.java))
+            for (id in eventIds) updateEventsWidget(context, appWidgetManager, id)
         }
 
         private fun pendingIntent(context: Context, requestCode: Int): PendingIntent {
@@ -480,32 +419,35 @@ class VexonoWidgetProvider : AppWidgetProvider() {
 /** Bar (2×1) Widget Provider */
 class VexonoBarWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        for (id in appWidgetIds) {
-            VexonoWidgetProvider.updateBarWidget(context, appWidgetManager, id)
-        }
+        for (id in appWidgetIds) VexonoWidgetProvider.updateBarWidget(context, appWidgetManager, id)
     }
     override fun onEnabled(context: Context) { MidnightUpdateReceiver.schedule(context) }
-    override fun onDisabled(context: Context) { /* only cancel if ALL providers are gone */ }
+    override fun onDisabled(context: Context) {}
 }
 
 /** Square (2×2) Widget Provider */
 class VexonoSquareWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        for (id in appWidgetIds) {
-            VexonoWidgetProvider.updateSquareWidget(context, appWidgetManager, id)
-        }
+        for (id in appWidgetIds) VexonoWidgetProvider.updateSquareWidget(context, appWidgetManager, id)
     }
     override fun onEnabled(context: Context) { MidnightUpdateReceiver.schedule(context) }
-    override fun onDisabled(context: Context) { /* only cancel if ALL providers are gone */ }
+    override fun onDisabled(context: Context) {}
 }
 
 /** Agenda (4×2) Widget Provider */
 class VexonoAgendaWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        for (id in appWidgetIds) {
-            VexonoWidgetProvider.updateAgendaWidget(context, appWidgetManager, id)
-        }
+        for (id in appWidgetIds) VexonoWidgetProvider.updateAgendaWidget(context, appWidgetManager, id)
     }
     override fun onEnabled(context: Context) { MidnightUpdateReceiver.schedule(context) }
-    override fun onDisabled(context: Context) { /* only cancel if ALL providers are gone */ }
+    override fun onDisabled(context: Context) {}
+}
+
+/** Upcoming Events (4×2) Widget Provider */
+class VexonoEventsWidgetProvider : AppWidgetProvider() {
+    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        for (id in appWidgetIds) VexonoWidgetProvider.updateEventsWidget(context, appWidgetManager, id)
+    }
+    override fun onEnabled(context: Context) { MidnightUpdateReceiver.schedule(context) }
+    override fun onDisabled(context: Context) {}
 }

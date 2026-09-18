@@ -144,7 +144,15 @@ class MidnightUpdateReceiver : BroadcastReceiver() {
                 VexonoWidgetProvider.updateAgendaWidget(context, appWidgetManager, id)
             }
 
-            Log.d(TAG, "All widgets updated (today=${todayIds.size}, bar=${barIds.size}, square=${squareIds.size}, agenda=${agendaIds.size})")
+            // Update events widget
+            val eventsIds = appWidgetManager.getAppWidgetIds(
+                ComponentName(context, VexonoEventsWidgetProvider::class.java)
+            )
+            for (id in eventsIds) {
+                VexonoWidgetProvider.updateEventsWidget(context, appWidgetManager, id)
+            }
+
+            Log.d(TAG, "All widgets updated (today=${todayIds.size}, bar=${barIds.size}, square=${squareIds.size}, agenda=${agendaIds.size}, events=${eventsIds.size})")
         }
     }
 }

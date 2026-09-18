@@ -1,185 +1,286 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Widget 4×2: Agenda / Schedule - shows today's date + up to 3 events/tasks -->
+<!-- Widget 4×2: Samsung One UI Today + Month Grid + Agenda (matching Image 2) -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_agenda_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="horizontal"
-    android:padding="12dp">
+    android:padding="14dp">
 
-    <!-- Left Column: Date Summary -->
-    <LinearLayout
-        android:layout_width="90dp"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/agenda_weekday"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="چهارشنبه"
-            android:textColor="#00E5C7"
-            android:textSize="11sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/agenda_day_number"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:text="۱۵"
-            android:textColor="#F5F5F7"
-            android:textSize="36sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/agenda_month_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="اسفند"
-            android:textColor="#7C4DFF"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/agenda_year"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="۱۴۰۳"
-            android:textColor="#9E9EA8"
-            android:textSize="10sp" />
-    </LinearLayout>
-
-    <!-- Vertical Divider -->
-    <View
-        android:layout_width="1dp"
-        android:layout_height="match_parent"
-        android:layout_marginStart="6dp"
-        android:layout_marginEnd="10dp"
-        android:background="#22FFFFFF" />
-
-    <!-- Right Column: Events and Tasks -->
+    <!-- Left Half: Mini Month Calendar Grid -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
+        android:layout_weight="1.05"
+        android:gravity="center"
         android:orientation="vertical">
 
-        <!-- Occasion Row (if any) -->
-        <TextView
-            android:id="@+id/agenda_occasion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/widget_tag_background"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:paddingStart="6dp"
-            android:paddingTop="2dp"
-            android:paddingEnd="6dp"
-            android:paddingBottom="2dp"
-            android:text=""
-            android:textColor="#F5F5F7"
-            android:textSize="9sp"
-            android:visibility="gone" />
-
-        <!-- Event Item 1 -->
+        <!-- Weekday Headers (ش ی د س چ پ ج) -->
         <LinearLayout
-            android:id="@+id/agenda_event_1_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:visibility="gone">
+            android:orientation="horizontal">
 
-            <View
-                android:id="@+id/agenda_event_1_color"
-                android:layout_width="3dp"
-                android:layout_height="20dp"
-                android:background="#7C4DFF" />
-
-            <TextView
-                android:id="@+id/agenda_event_1_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="رویداد"
-                android:textColor="#F5F5F7"
-                android:textSize="11sp" />
-
-            <TextView
-                android:id="@+id/agenda_event_1_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="۱۰:۳۰"
-                android:textColor="#9E9EA8"
-                android:textSize="10sp" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:text="ش" android:textColor="#8E8E98" android:textSize="9sp" android:textStyle="bold" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:text="ی" android:textColor="#8E8E98" android:textSize="9sp" android:textStyle="bold" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:text="د" android:textColor="#8E8E98" android:textSize="9sp" android:textStyle="bold" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:text="س" android:textColor="#8E8E98" android:textSize="9sp" android:textStyle="bold" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:text="چ" android:textColor="#8E8E98" android:textSize="9sp" android:textStyle="bold" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:text="پ" android:textColor="#8E8E98" android:textSize="9sp" android:textStyle="bold" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:text="ج" android:textColor="#FF5252" android:textSize="9sp" android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Event Item 2 -->
+        <!-- 6 rows x 7 cols day cells -->
+        <!-- Row 0 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:id="@+id/ag_c0_0" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c0_1" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c0_2" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c0_3" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c0_4" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c0_5" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c0_6" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#FF5252" />
+        </LinearLayout>
+        <!-- Row 1 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:id="@+id/ag_c1_0" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c1_1" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c1_2" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c1_3" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c1_4" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c1_5" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c1_6" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#FF5252" />
+        </LinearLayout>
+        <!-- Row 2 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:id="@+id/ag_c2_0" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c2_1" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c2_2" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c2_3" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c2_4" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c2_5" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c2_6" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#FF5252" />
+        </LinearLayout>
+        <!-- Row 3 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:id="@+id/ag_c3_0" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c3_1" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c3_2" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c3_3" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c3_4" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c3_5" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c3_6" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#FF5252" />
+        </LinearLayout>
+        <!-- Row 4 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:id="@+id/ag_c4_0" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c4_1" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c4_2" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c4_3" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c4_4" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c4_5" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c4_6" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#FF5252" />
+        </LinearLayout>
+        <!-- Row 5 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical" android:orientation="horizontal">
+            <TextView android:id="@+id/ag_c5_0" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c5_1" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c5_2" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c5_3" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c5_4" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c5_5" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#E0E0E6" />
+            <TextView android:id="@+id/ag_c5_6" android:layout_width="0dp" android:layout_height="18dp" android:layout_weight="1" android:gravity="center" android:includeFontPadding="false" android:textSize="9sp" android:textColor="#FF5252" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Vertical Subtle Divider -->
+    <View
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="12dp"
+        android:background="#1FFFFFFF" />
+
+    <!-- Right Half: Date Header + Event Add Button + Events or No Events Message -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1.2"
+        android:orientation="vertical">
+
+        <!-- Header: Date (e.g. SEP 18 / ۱۸ شهریور) + Circular (+) Button -->
         <LinearLayout
-            android:id="@+id/agenda_event_2_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <View
-                android:id="@+id/agenda_event_2_color"
-                android:layout_width="3dp"
-                android:layout_height="20dp"
-                android:background="#00E5C7" />
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/agenda_event_2_title"
+                android:id="@+id/ag_header_date"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="رویداد ۲"
-                android:textColor="#F5F5F7"
-                android:textSize="11sp" />
+                android:includeFontPadding="false"
+                android:text="۱۸ شهریور"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
+            <!-- Circular + Add Event Button -->
             <TextView
-                android:id="@+id/agenda_event_2_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="۱۴:۰۰"
-                android:textColor="#9E9EA8"
-                android:textSize="10sp" />
+                android:id="@+id/ag_btn_add"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:background="@drawable/widget_button_circle"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:text="+"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Task Summary -->
-        <TextView
-            android:id="@+id/agenda_task_summary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text=""
-            android:textColor="#00E5C7"
-            android:textSize="10sp"
-            android:visibility="gone" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-        <!-- Empty State -->
-        <TextView
-            android:id="@+id/agenda_empty"
-            android:layout_width="wrap_content"
+        <!-- Empty State: "رویدادی نیست / روز خوبی داشته باشید!" -->
+        <LinearLayout
+            android:id="@+id/ag_empty_layout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="امروز برنامه‌ای ثبت نشده"
-            android:textColor="#6E6E7A"
-            android:textSize="11sp"
-            android:visibility="visible" />
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <TextView
+                android:id="@+id/ag_empty_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:text="رویدادی برای امروز نیست"
+                android:textColor="#E0E0E6"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/ag_empty_sub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:includeFontPadding="false"
+                android:text="روز خوبی داشته باشید!"
+                android:textColor="#8E8E98"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- Events List (up to 2 items shown) -->
+        <LinearLayout
+            android:id="@+id/ag_events_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <!-- Event 1 -->
+            <LinearLayout
+                android:id="@+id/ag_item1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <View
+                    android:id="@+id/ag_item1_bar"
+                    android:layout_width="3dp"
+                    android:layout_height="22dp"
+                    android:background="@drawable/widget_bar_indicator_blue" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/ag_item1_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:text="عنوان رویداد"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/ag_item1_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
+                        android:text="۱۰:۰۰"
+                        android:textColor="#8E8E98"
+                        android:textSize="10sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Event 2 -->
+            <LinearLayout
+                android:id="@+id/ag_item2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <View
+                    android:id="@+id/ag_item2_bar"
+                    android:layout_width="3dp"
+                    android:layout_height="22dp"
+                    android:background="@drawable/widget_bar_indicator_orange" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/ag_item2_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:text="عنوان رویداد ۲"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/ag_item2_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
+                        android:text="۱۴:۰۰"
+                        android:textColor="#8E8E98"
+                        android:textSize="10sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
     </LinearLayout>
 
