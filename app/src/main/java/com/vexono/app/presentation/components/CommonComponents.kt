@@ -75,16 +75,20 @@ import com.vexono.app.presentation.theme.LocalCustomColors
 fun GlassSurface(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(20.dp),
-    backgroundColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.65f),
-    borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+    backgroundColor: Color? = null, // null = use theme-adaptive default
+    borderColor: Color? = null,     // null = use theme-adaptive default
     borderWidth: Dp = 1.dp,
     shadowElevation: Dp = 8.dp,
     content: @Composable () -> Unit
 ) {
+    val customColors = LocalCustomColors.current
+    val resolvedBackground = backgroundColor ?: MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+    val resolvedBorder = borderColor ?: customColors.glassSurfaceBorder
+
     Surface(
         shape = shape,
-        color = backgroundColor,
-        border = BorderStroke(borderWidth, borderColor),
+        color = resolvedBackground,
+        border = BorderStroke(borderWidth, resolvedBorder),
         shadowElevation = shadowElevation,
         modifier = modifier
     ) {
@@ -96,13 +100,17 @@ fun GlassSurface(
 fun GlassCard(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(18.dp),
-    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-    borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
+    backgroundColor: Color? = null, // null = use theme-adaptive default
+    borderColor: Color? = null,     // null = use theme-adaptive default
     borderWidth: Dp = 1.dp,
     shadowElevation: Dp = 6.dp,
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
+    val customColors = LocalCustomColors.current
+    val resolvedBackground = backgroundColor ?: customColors.glassCardBackground
+    val resolvedBorder = borderColor ?: customColors.glassCardBorder
+
     val clickModifier = if (onClick != null) {
         Modifier.clickable(
             interactionSource = remember { MutableInteractionSource() },
@@ -115,8 +123,8 @@ fun GlassCard(
 
     Surface(
         shape = shape,
-        color = backgroundColor,
-        border = BorderStroke(borderWidth, borderColor),
+        color = resolvedBackground,
+        border = BorderStroke(borderWidth, resolvedBorder),
         shadowElevation = shadowElevation,
         modifier = modifier.then(clickModifier)
     ) {
@@ -134,7 +142,7 @@ fun GlassButton(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(14.dp),
     containerColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
-    contentColor: Color = Color.White,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
     borderColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
     borderWidth: Dp = 1.dp,
     enabled: Boolean = true,
@@ -148,8 +156,8 @@ fun GlassButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor,
-            disabledContainerColor = Color.White.copy(alpha = 0.04f),
-            disabledContentColor = Color.White.copy(alpha = 0.35f)
+            disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
         ),
         border = BorderStroke(borderWidth, borderColor),
         contentPadding = contentPadding,
@@ -164,9 +172,9 @@ fun GlassOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(14.dp),
-    containerColor: Color = Color.White.copy(alpha = 0.05f),
+    containerColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    borderColor: Color = Color.White.copy(alpha = 0.18f),
+    borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
     borderWidth: Dp = 1.dp,
     enabled: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
@@ -179,8 +187,8 @@ fun GlassOutlinedButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor,
-            disabledContainerColor = Color.White.copy(alpha = 0.02f),
-            disabledContentColor = Color.White.copy(alpha = 0.25f)
+            disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f),
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
         ),
         border = BorderStroke(borderWidth, borderColor),
         contentPadding = contentPadding,
@@ -195,8 +203,8 @@ fun GlassIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(12.dp),
-    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-    borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+    containerColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+    borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
     borderWidth: Dp = 1.dp,
     size: Dp = 42.dp,
     content: @Composable () -> Unit
@@ -263,13 +271,14 @@ fun GlassTextField(
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     shape: Shape = RoundedCornerShape(14.dp)
 ) {
+    val customColors = LocalCustomColors.current
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         placeholder = {
             Text(
                 text = placeholder,
-                color = LocalCustomColors.current.textMuted.copy(alpha = 0.7f),
+                color = customColors.textMuted.copy(alpha = 0.7f),
                 style = textStyle
             )
         },
@@ -280,10 +289,10 @@ fun GlassTextField(
         textStyle = textStyle.copy(color = MaterialTheme.colorScheme.onBackground),
         shape = shape,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color.White.copy(alpha = 0.08f),
-            unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
+            focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
             focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-            unfocusedBorderColor = Color.White.copy(alpha = 0.12f),
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
             cursorColor = MaterialTheme.colorScheme.primary
         ),
         modifier = modifier
@@ -291,7 +300,7 @@ fun GlassTextField(
 }
 
 // ----------------------------------------------------
-// 4. Calendar Day Cell (Glassy Theme)
+// 4. Calendar Day Cell (Glassy Theme - Adaptive)
 // ----------------------------------------------------
 
 @Composable
@@ -303,6 +312,7 @@ fun CalendarDayCell(
     modifier: Modifier = Modifier
 ) {
     val customColors = LocalCustomColors.current
+    val isDark = MaterialTheme.colorScheme.background.red < 0.5f // heuristic for dark mode
 
     val textColor = when {
         !day.isCurrentMonth -> customColors.textMuted.copy(alpha = 0.3f)
@@ -319,14 +329,14 @@ fun CalendarDayCell(
     val cellBackground = when {
         isSelected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
         day.isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-        day.isCurrentMonth -> Color.White.copy(alpha = 0.04f)
+        day.isCurrentMonth -> if (isDark) Color.White.copy(alpha = 0.04f) else MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
         else -> Color.Transparent
     }
 
     val borderModifier = when {
         isSelected -> Modifier.border(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), RoundedCornerShape(14.dp))
         day.isToday -> Modifier.border(1.2.dp, customColors.accentColor.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
-        day.isCurrentMonth -> Modifier.border(1.dp, Color.White.copy(alpha = 0.07f), RoundedCornerShape(14.dp))
+        day.isCurrentMonth -> Modifier.border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(14.dp))
         else -> Modifier
     }
 
@@ -429,7 +439,7 @@ fun OccasionCategoryBadge(
         category == OccasionCategory.NATIONAL -> Tuple4(customColors.accentColor.copy(alpha = 0.18f), customColors.accentColor, customColors.accentColor.copy(alpha = 0.35f), "ملی و باستانی")
         category == OccasionCategory.RELIGIOUS -> Tuple4(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f), "مذهبی و اعیاد")
         category == OccasionCategory.OFFICIAL -> Tuple4(customColors.warningColor.copy(alpha = 0.18f), customColors.warningColor, customColors.warningColor.copy(alpha = 0.35f), "رسمی")
-        else -> Tuple4(Color.White.copy(alpha = 0.08f), MaterialTheme.colorScheme.onSurfaceVariant, Color.White.copy(alpha = 0.15f), "بین‌المللی")
+        else -> Tuple4(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), "بین‌المللی")
     }
 
     Box(
@@ -479,7 +489,7 @@ fun PriorityBadge(
 }
 
 // ----------------------------------------------------
-// 6. Glassy Empty State View
+// 6. Glassy Empty State View (Theme Adaptive)
 // ----------------------------------------------------
 
 @Composable
@@ -496,8 +506,8 @@ fun EmptyStateView(
     ) {
         GlassSurface(
             shape = CircleShape,
-            backgroundColor = Color.White.copy(alpha = 0.08f),
-            borderColor = Color.White.copy(alpha = 0.15f),
+            backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+            borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
             modifier = Modifier.size(76.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
@@ -520,14 +530,14 @@ fun EmptyStateView(
         Text(
             text = description,
             style = MaterialTheme.typography.bodyMedium,
-            color = LocalCustomColors.current.textMuted,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
     }
 }
 
 // ----------------------------------------------------
-// 7. Glassy Occasion Bottom Sheet
+// 7. Glassy Occasion Bottom Sheet (Theme Adaptive)
 // ----------------------------------------------------
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -545,7 +555,7 @@ fun OccasionDetailBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = customColors.surfaceElevated.copy(alpha = 0.95f),
+        containerColor = customColors.dialogBackground,
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -553,7 +563,7 @@ fun OccasionDetailBottomSheet(
                     .width(42.dp)
                     .height(4.dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.25f))
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f))
             )
         },
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -580,7 +590,7 @@ fun OccasionDetailBottomSheet(
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "${JalaliCalendarEngine.getFullGregorianDateString(day.gregorianDate)}  •  ${JalaliCalendarEngine.getFullIslamicDateString(day.islamicDate)}",
-                        color = customColors.textMuted,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
                 }
@@ -608,8 +618,8 @@ fun OccasionDetailBottomSheet(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     day.occasions.forEach { occasion ->
                         GlassCard(
-                            backgroundColor = if (occasion.isHoliday) customColors.holidayColor.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.05f),
-                            borderColor = if (occasion.isHoliday) customColors.holidayColor.copy(alpha = 0.3f) else Color.White.copy(alpha = 0.1f),
+                            backgroundColor = if (occasion.isHoliday) customColors.holidayColor.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            borderColor = if (occasion.isHoliday) customColors.holidayColor.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -638,11 +648,12 @@ fun OccasionDetailBottomSheet(
             } else {
                 GlassCard(
                     modifier = Modifier.fillMaxWidth(),
-                    backgroundColor = Color.White.copy(alpha = 0.03f)
+                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
                 ) {
                     Text(
                         text = "هیچ مناسبت رسمی برای این روز ثبت نشده است.",
-                        color = customColors.textMuted,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(14.dp)
                     )

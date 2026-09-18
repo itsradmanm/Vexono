@@ -13,7 +13,7 @@ enum class Priority {
 }
 
 enum class OccasionCategory {
-    NATIONAL, RELIGIOUS, OFFICIAL, INTERNATIONAL, CUSTOM
+    NATIONAL, RELIGIOUS, OFFICIAL, INTERNATIONAL
 }
 
 data class JalaliDate(
@@ -102,10 +102,6 @@ data class Task(
     val isCompleted: Boolean = false,
     val priority: Priority = Priority.MEDIUM,
     val category: String = "عمومی",
-    val hasReminder: Boolean = false,
-    val reminderHour: Int? = null,
-    val reminderMinute: Int? = null,
-    val colorTag: String? = null,
     val createdAt: Long = System.currentTimeMillis()
 )
 

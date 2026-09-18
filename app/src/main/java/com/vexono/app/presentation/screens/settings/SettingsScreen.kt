@@ -36,15 +36,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,53 +62,6 @@ fun SettingsScreen(
     val settings by viewModel.settingsState.collectAsState()
     val customColors = LocalCustomColors.current
     val context = LocalContext.current
-
-    var hasNotificationPermission by remember {
-        mutableStateOf(
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                androidx.core.content.ContextCompat.checkSelfPermission(
-                    context,
-                    android.Manifest.permission.POST_NOTIFICATIONS
-                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-            } else {
-                true
-            }
-        )
-    }
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        hasNotificationPermission = isGranted
-        if (!isGranted) {
-            viewModel.setEnablePersistentNotification(false)
-        } else {
-            val serviceIntent = Intent(context, com.vexono.app.data.service.PersistentCalendarNotificationService::class.java)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent)
-            } else {
-                context.startService(serviceIntent)
-            }
-        }
-    }
-
-    LaunchedEffect(settings.enablePersistentNotification) {
-        if (settings.enablePersistentNotification) {
-            if (!hasNotificationPermission && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-            } else {
-                val serviceIntent = Intent(context, com.vexono.app.data.service.PersistentCalendarNotificationService::class.java)
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    context.startForegroundService(serviceIntent)
-                } else {
-                    context.startService(serviceIntent)
-                }
-            }
-        } else {
-            val serviceIntent = Intent(context, com.vexono.app.data.service.PersistentCalendarNotificationService::class.java)
-            context.stopService(serviceIntent)
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -258,11 +205,14 @@ fun SettingsScreen(
                         isChecked = settings.enableNotifications,
                         onCheckedChange = { viewModel.setEnableNotifications(it) }
                     )
+
                     SettingsToggleRow(
-                        title = "نوتیفیکیشن دائم تقویم",
-                        subtitle = "نمایش تاریخ امروز و مناسبت‌ها به صورت دائم در نوار وضعیت",
+                        title = "تقویم در نوار وضعیت",
+                        subtitle = "نمایش تاریخ شمسی امروز به صورت دائم در نوار اعلان‌ها (نوار بالای صفحه)",
                         isChecked = settings.enablePersistentNotification,
-                        onCheckedChange = { viewModel.setEnablePersistentNotification(it) }
+                        onCheckedChange = { enable ->
+                            viewModel.setEnablePersistentNotification(enable)
+                        }
                     )
                 }
             }

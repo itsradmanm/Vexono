@@ -19,9 +19,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.DeleteOutline
@@ -95,7 +95,7 @@ fun DayDetailScreen(
                         size = 38.dp
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowForward,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = "بازگشت",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
@@ -113,8 +113,8 @@ fun DayDetailScreen(
         bottomBar = {
             GlassSurface(
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                backgroundColor = customColors.surfaceElevated.copy(alpha = 0.95f),
-                borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.14f),
+                backgroundColor = customColors.bottomBarBackground.copy(alpha = 0.96f),
+                borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
                 shadowElevation = 12.dp,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -154,6 +154,7 @@ fun DayDetailScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
@@ -161,7 +162,7 @@ fun DayDetailScreen(
                 // 1. Full Date Banner Card (Glassy)
                 GlassCard(
                     shape = RoundedCornerShape(22.dp),
-                    backgroundColor = Color.White.copy(alpha = 0.08f),
+                    backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
                     borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -216,8 +217,8 @@ fun DayDetailScreen(
                         uiState.occasions.forEach { occ ->
                             GlassCard(
                                 shape = RoundedCornerShape(16.dp),
-                                backgroundColor = if (occ.isHoliday) customColors.holidayColor.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.06f),
-                                borderColor = if (occ.isHoliday) customColors.holidayColor.copy(alpha = 0.35f) else Color.White.copy(alpha = 0.12f),
+                                backgroundColor = if (occ.isHoliday) customColors.holidayColor.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                borderColor = if (occ.isHoliday) customColors.holidayColor.copy(alpha = 0.35f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
@@ -329,8 +330,8 @@ private fun GlassEventItemCard(
 
     GlassCard(
         shape = RoundedCornerShape(16.dp),
-        backgroundColor = Color.White.copy(alpha = 0.07f),
-        borderColor = Color.White.copy(alpha = 0.12f),
+        backgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -354,9 +355,7 @@ private fun GlassEventItemCard(
                     text = event.title,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 if (event.description.isNotBlank()) {
                     Text(
@@ -423,8 +422,8 @@ private fun GlassTaskItemCard(
 ) {
     GlassCard(
         shape = RoundedCornerShape(16.dp),
-        backgroundColor = if (task.isCompleted) Color.White.copy(alpha = 0.03f) else Color.White.copy(alpha = 0.07f),
-        borderColor = if (task.isCompleted) Color.White.copy(alpha = 0.06f) else Color.White.copy(alpha = 0.12f),
+        backgroundColor = if (task.isCompleted) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        borderColor = if (task.isCompleted) MaterialTheme.colorScheme.outline.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -448,9 +447,7 @@ private fun GlassTaskItemCard(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = if (task.isCompleted) FontWeight.Normal else FontWeight.Medium,
                     color = if (task.isCompleted) LocalCustomColors.current.textMuted else MaterialTheme.colorScheme.onSurface,
-                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
                 )
             }
 

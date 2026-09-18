@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,8 +22,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -63,7 +61,6 @@ import com.vexono.app.presentation.components.PersianTimePickerDialog
 import com.vexono.app.presentation.theme.LocalCustomColors
 import com.vexono.app.presentation.viewmodel.EventEditorViewModel
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EventEditorScreen(
     viewModel: EventEditorViewModel,
@@ -143,7 +140,7 @@ fun EventEditorScreen(
                             size = 38.dp
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                 contentDescription = "بازگشت",
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
@@ -177,8 +174,8 @@ fun EventEditorScreen(
         bottomBar = {
             GlassSurface(
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                backgroundColor = customColors.surfaceElevated.copy(alpha = 0.95f),
-                borderColor = Color.White.copy(alpha = 0.14f),
+                backgroundColor = customColors.bottomBarBackground.copy(alpha = 0.96f),
+                borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
                 shadowElevation = 12.dp,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -394,16 +391,16 @@ fun EventEditorScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                FlowRow(
+                LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    recurrenceOptions.forEach { (type, label) ->
+                    items(recurrenceOptions) { (type, label) ->
                         val isSelected = uiState.recurrence == type
                         GlassCard(
-                            backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f) else Color.White.copy(alpha = 0.05f),
-                            borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.1f),
+                            backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
                             onClick = { viewModel.setRecurrence(type) }
                         ) {
                             Text(
@@ -472,16 +469,16 @@ fun EventEditorScreen(
                             color = customColors.textMuted
                         )
                         Spacer(modifier = Modifier.height(6.dp))
-                        FlowRow(
+                        LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 4.dp, end = 16.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            reminderOptions.forEach { (mins, label) ->
+                            items(reminderOptions) { (mins, label) ->
                                 val isSelected = uiState.reminderMinutesBefore == mins
                                 GlassCard(
-                                    backgroundColor = if (isSelected) customColors.accentColor.copy(alpha = 0.35f) else Color.White.copy(alpha = 0.05f),
-                                    borderColor = if (isSelected) customColors.accentColor.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.1f),
+                                    backgroundColor = if (isSelected) customColors.accentColor.copy(alpha = 0.35f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    borderColor = if (isSelected) customColors.accentColor.copy(alpha = 0.7f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
                                     onClick = { viewModel.setReminderMinutesBefore(mins) }
                                 ) {
                                     Text(

@@ -37,6 +37,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.vexono.app.di.AppContainer
+import com.vexono.app.presentation.theme.LocalCustomColors
 import com.vexono.app.domain.model.JalaliDate
 import com.vexono.app.presentation.screens.calendar.CalendarScreen
 import com.vexono.app.presentation.screens.daydetail.DayDetailScreen
@@ -60,6 +61,7 @@ fun VexonoNavGraph(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val customColors = LocalCustomColors.current
 
     val isBottomBarVisible = currentRoute in listOf(
         Screen.Calendar.route,
@@ -75,11 +77,10 @@ fun VexonoNavGraph(
                 enter = fadeIn() + slideInVertically { it },
                 exit = fadeOut() + slideOutVertically { it }
             ) {
-                val customColors = com.vexono.app.presentation.theme.LocalCustomColors.current
                 com.vexono.app.presentation.components.GlassSurface(
                     shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                    backgroundColor = customColors.surfaceElevated.copy(alpha = 0.92f),
-                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f),
+                    backgroundColor = customColors.bottomBarBackground.copy(alpha = 0.96f),
+                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
                     shadowElevation = 12.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {

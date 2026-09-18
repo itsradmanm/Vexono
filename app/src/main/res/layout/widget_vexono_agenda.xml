@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget 4×2: Agenda / Schedule - shows today's date + up to 3 events/tasks -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_agenda_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <!-- Left Column: Date Summary -->
+    <LinearLayout
+        android:layout_width="90dp"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/agenda_weekday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="چهارشنبه"
+            android:textColor="#00E5C7"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/agenda_day_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:text="۱۵"
+            android:textColor="#F5F5F7"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/agenda_month_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="اسفند"
+            android:textColor="#7C4DFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/agenda_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="۱۴۰۳"
+            android:textColor="#9E9EA8"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- Vertical Divider -->
+    <View
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="10dp"
+        android:background="#22FFFFFF" />
+
+    <!-- Right Column: Events and Tasks -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <!-- Occasion Row (if any) -->
+        <TextView
+            android:id="@+id/agenda_occasion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/widget_tag_background"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingStart="6dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="2dp"
+            android:text=""
+            android:textColor="#F5F5F7"
+            android:textSize="9sp"
+            android:visibility="gone" />
+
+        <!-- Event Item 1 -->
+        <LinearLayout
+            android:id="@+id/agenda_event_1_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <View
+                android:id="@+id/agenda_event_1_color"
+                android:layout_width="3dp"
+                android:layout_height="20dp"
+                android:background="#7C4DFF" />
+
+            <TextView
+                android:id="@+id/agenda_event_1_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="رویداد"
+                android:textColor="#F5F5F7"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/agenda_event_1_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="۱۰:۳۰"
+                android:textColor="#9E9EA8"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Event Item 2 -->
+        <LinearLayout
+            android:id="@+id/agenda_event_2_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <View
+                android:id="@+id/agenda_event_2_color"
+                android:layout_width="3dp"
+                android:layout_height="20dp"
+                android:background="#00E5C7" />
+
+            <TextView
+                android:id="@+id/agenda_event_2_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="رویداد ۲"
+                android:textColor="#F5F5F7"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/agenda_event_2_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="۱۴:۰۰"
+                android:textColor="#9E9EA8"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Task Summary -->
+        <TextView
+            android:id="@+id/agenda_task_summary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text=""
+            android:textColor="#00E5C7"
+            android:textSize="10sp"
+            android:visibility="gone" />
+
+        <!-- Empty State -->
+        <TextView
+            android:id="@+id/agenda_empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="امروز برنامه‌ای ثبت نشده"
+            android:textColor="#6E6E7A"
+            android:textSize="11sp"
+            android:visibility="visible" />
+
+    </LinearLayout>
+
+</LinearLayout>

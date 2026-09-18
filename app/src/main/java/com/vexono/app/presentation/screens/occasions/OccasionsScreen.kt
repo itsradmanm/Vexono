@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -78,10 +77,10 @@ fun OccasionsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 12.dp)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -110,7 +109,7 @@ fun OccasionsScreen(
 
                     // Wheel Picker (1300 to 1500)
                     AnimatedVisibility(visible = showYearWheelPicker) {
-                        Column(modifier = Modifier.padding(top = 10.dp).padding(horizontal = 16.dp)) {
+                        Column(modifier = Modifier.padding(top = 10.dp)) {
                             Text(
                                 text = "انتخاب سال شمسی (۱۳۰۰ تا ۱۵۰۰):",
                                 style = MaterialTheme.typography.labelSmall,
@@ -146,7 +145,7 @@ fun OccasionsScreen(
                                 }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -154,7 +153,6 @@ fun OccasionsScreen(
                     // Glassy Category Filter Chips
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         item {
@@ -307,9 +305,7 @@ private fun GlassOccasionCard(
                     text = occasion.title,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = if (occasion.isHoliday) FontWeight.Bold else FontWeight.Medium,
-                    color = if (occasion.isHoliday) customColors.holidayColor else MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    color = if (occasion.isHoliday) customColors.holidayColor else MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(

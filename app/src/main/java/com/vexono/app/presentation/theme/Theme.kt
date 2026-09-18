@@ -24,7 +24,18 @@ data class CustomColorsPalette(
     val warningColor: Color = VexonoWarningAmber,
     val successColor: Color = VexonoSuccessGreen,
     val surfaceElevated: Color = VexonoDarkSurfaceElevated,
-    val textMuted: Color = VexonoTextMuted
+    val textMuted: Color = VexonoTextMuted,
+    // Bottom bar background - dark in dark mode, frosted white in light mode
+    val bottomBarBackground: Color = VexonoDarkBottomBar,
+    // Dialog / sheet background
+    val dialogBackground: Color = VexonoDarkSurface,
+    // Glass card background - adapts per theme for visibility
+    val glassCardBackground: Color = Color.White.copy(alpha = 0.08f),
+    val glassCardBorder: Color = Color.White.copy(alpha = 0.12f),
+    // Glass surface border color
+    val glassSurfaceBorder: Color = Color.White.copy(alpha = 0.14f),
+    // Gradient mask color for wheel pickers (should match background)
+    val wheelPickerMaskColor: Color = VexonoDarkBackground
 )
 
 val LocalCustomColors = staticCompositionLocalOf { CustomColorsPalette() }
@@ -66,7 +77,7 @@ fun VexonoTheme(
         lightColorScheme(
             primary = brandColor,
             onPrimary = Color.White,
-            secondary = Color(0xFF00BFA5),
+            secondary = Color(0xFF00897B),
             onSecondary = Color.White,
             tertiary = Color(0xFFE65100),
             background = VexonoLightBackground,
@@ -88,16 +99,28 @@ fun VexonoTheme(
             warningColor = VexonoWarningAmber,
             successColor = VexonoSuccessGreen,
             surfaceElevated = VexonoDarkSurfaceElevated,
-            textMuted = VexonoTextMuted
+            textMuted = VexonoTextMuted,
+            bottomBarBackground = VexonoDarkBottomBar,
+            dialogBackground = VexonoDarkSurface,
+            glassCardBackground = Color.White.copy(alpha = 0.08f),
+            glassCardBorder = Color.White.copy(alpha = 0.12f),
+            glassSurfaceBorder = Color.White.copy(alpha = 0.14f),
+            wheelPickerMaskColor = VexonoDarkBackground
         )
     } else {
         CustomColorsPalette(
             holidayColor = VexonoHolidayRed,
-            accentColor = Color(0xFF00BFA5),
+            accentColor = Color(0xFF00897B),
             warningColor = Color(0xFFE65100),
             successColor = Color(0xFF059669),
             surfaceElevated = VexonoLightSurfaceElevated,
-            textMuted = VexonoLightTextMuted
+            textMuted = VexonoLightTextMuted,
+            bottomBarBackground = VexonoLightBottomBar,
+            dialogBackground = VexonoLightDialogBackground,
+            glassCardBackground = Color.White.copy(alpha = 0.85f),
+            glassCardBorder = VexonoLightBorder,
+            glassSurfaceBorder = VexonoLightBorder,
+            wheelPickerMaskColor = VexonoLightBackground
         )
     }
 

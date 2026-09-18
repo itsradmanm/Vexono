@@ -9,7 +9,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"
+        tools:targetApi="34" />
 
     <application
         android:name=".VexonoApplication"
@@ -23,6 +24,7 @@
         android:theme="@android:style/Theme.Material.NoActionBar"
         tools:targetApi="35">
 
+        <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -35,7 +37,18 @@
             </intent-filter>
         </activity>
 
-        <!-- App Widget Provider -->
+        <!-- Persistent Calendar Status Bar Service -->
+        <service
+            android:name=".data.service.PersistentCalendarNotificationService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            tools:targetApi="34">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="calendar_status_bar" />
+        </service>
+
+        <!-- Original (2×2 Today) Widget Provider -->
         <receiver
             android:name=".data.widget.VexonoWidgetProvider"
             android:exported="true"
@@ -47,74 +60,55 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/vexono_widget_info" />
         </receiver>
-        
+
+        <!-- Bar (2×1) Widget Provider -->
         <receiver
-            android:name=".data.widget.VexonoMinimalWidgetProvider"
+            android:name=".data.widget.VexonoBarWidgetProvider"
             android:exported="true"
-            android:label="ویجت مینیمال">
+            android:label="@string/widget_bar_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/widget_minimal_info" />
+                android:resource="@xml/vexono_widget_bar_info" />
         </receiver>
 
+        <!-- Square (2×2) Widget Provider -->
         <receiver
             android:name=".data.widget.VexonoSquareWidgetProvider"
             android:exported="true"
-            android:label="ویجت مربعی">
+            android:label="@string/widget_square_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/widget_square_info" />
+                android:resource="@xml/vexono_widget_square_info" />
         </receiver>
 
+        <!-- Agenda (4×2) Widget Provider -->
         <receiver
             android:name=".data.widget.VexonoAgendaWidgetProvider"
             android:exported="true"
-            android:label="ویجت برنامه روزانه">
+            android:label="@string/widget_agenda_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/widget_agenda_info" />
+                android:resource="@xml/vexono_widget_agenda_info" />
         </receiver>
 
+        <!-- Midnight Update Receiver (date changes, boot, timezone) -->
         <receiver
-            android:name=".data.widget.VexonoMonthGridWidgetProvider"
-            android:exported="true"
-            android:label="ویجت ماهانه">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_month_grid_info" />
-        </receiver>
-
-        <!-- Persistent Notification Service -->
-        <service
-            android:name=".data.service.PersistentCalendarNotificationService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Displays current Persian calendar date and events constantly in status bar" />
-        </service>
-
-        <!-- Midnight Update Receiver -->
-        <receiver
-            android:name=".data.receiver.MidnightUpdateReceiver"
-            android:enabled="true"
-            android:exported="false">
+            android:name=".data.widget.MidnightUpdateReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.DATE_CHANGED" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.vexono.app.ACTION_MIDNIGHT_UPDATE" />
             </intent-filter>
         </receiver>
 

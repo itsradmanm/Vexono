@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [EventEntity::class, TaskEntity::class, OccasionEntity::class],
-    version = 2,
+    version = 1,
     exportSchema = false
 )
 abstract class VexonoDatabase : RoomDatabase() {

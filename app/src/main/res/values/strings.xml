@@ -1,9 +1,14 @@
 <resources>
     <string name="app_name">Vexono</string>
-    <string name="widget_name">تقویم امروز Vexono</string>
+    <string name="widget_name">تقویم امروز Vexono (کلاسیک ۲×۲)</string>
+    <string name="widget_bar_name">تقویم نواری Vexono (۲×۱)</string>
+    <string name="widget_square_name">تقویم مربعی Vexono (۲×۲ پیشرفته)</string>
+    <string name="widget_agenda_name">برنامه روزانه Vexono (۴×۲ آجندا)</string>
     <string name="calendar">تقویم</string>
     <string name="tasks">تسک‌ها</string>
     <string name="occasions">مناسبت‌ها</string>
     <string name="settings">تنظیمات</string>
     <string name="today">امروز</string>
+    <string name="notification_channel_reminders">یادآورهای رویداد</string>
+    <string name="notification_channel_calendar">تقویم روز (نوار وضعیت)</string>
 </resources>

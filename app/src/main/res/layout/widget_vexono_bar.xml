@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget 2×1: Minimal Bar - shows day number, weekday, month name -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_bar_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <!-- Large Day Number -->
+    <TextView
+        android:id="@+id/bar_day_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="۱۵"
+        android:textColor="#F5F5F7"
+        android:textSize="32sp"
+        android:textStyle="bold" />
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:background="#33FFFFFF" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/bar_month_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="اسفند"
+            android:textColor="#7C4DFF"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/bar_weekday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="چهارشنبه"
+            android:textColor="#9E9EA8"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="end|center_vertical"
+        android:paddingEnd="4dp">
+
+        <TextView
+            android:id="@+id/bar_occasion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/widget_tag_background"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingStart="6dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="2dp"
+            android:text=""
+            android:textColor="#F5F5F7"
+            android:textSize="9sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</LinearLayout>

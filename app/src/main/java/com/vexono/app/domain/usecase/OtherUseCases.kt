@@ -105,5 +105,5 @@ class UpdateSettingsUseCase(private val settingsRepository: SettingsRepository) 
     suspend fun setShowGregorianDate(show: Boolean) = settingsRepository.updateShowGregorianDate(show)
     suspend fun setShowIslamicDate(show: Boolean) = settingsRepository.updateShowIslamicDate(show)
     suspend fun setEnableNotifications(enable: Boolean) = settingsRepository.updateEnableNotifications(enable)
-    suspend fun setEnablePersistentNotification(enable: Boolean) = settingsRepository.updateEnablePersistentNotification(enable)
+    suspend fun setPersistentNotification(enable: Boolean) = settingsRepository.updateEnablePersistentNotification(enable)
 }

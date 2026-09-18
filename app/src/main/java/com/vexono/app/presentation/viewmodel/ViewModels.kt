@@ -455,7 +455,7 @@ class SettingsViewModel(
 
     fun setEnablePersistentNotification(enable: Boolean) {
         viewModelScope.launch {
-            container.updateSettingsUseCase.setEnablePersistentNotification(enable)
+            container.updateSettingsUseCase.setPersistentNotification(enable)
         }
     }
 }

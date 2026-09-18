@@ -29,13 +29,9 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -94,8 +90,6 @@ fun TasksScreen(
         topBar = {
             GlassSurface(
                 shape = RoundedCornerShape(bottomStart = 22.dp, bottomEnd = 22.dp),
-                backgroundColor = Color.White.copy(alpha = 0.05f),
-                borderColor = Color.White.copy(alpha = 0.1f),
                 shadowElevation = 4.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -161,8 +155,8 @@ fun TasksScreen(
             // Fast Add Task Input Bar with imePadding so it stays above keyboard
             GlassSurface(
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-                backgroundColor = customColors.surfaceElevated.copy(alpha = 0.95f),
-                borderColor = Color.White.copy(alpha = 0.14f),
+                backgroundColor = customColors.bottomBarBackground.copy(alpha = 0.96f),
+                borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
                 shadowElevation = 12.dp,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -300,8 +294,8 @@ private fun GlassFilterTab(
     onClick: () -> Unit
 ) {
     GlassCard(
-        backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.28f) else Color.White.copy(alpha = 0.05f),
-        borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.1f),
+        backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.28f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
         onClick = onClick
     ) {
         Text(
@@ -314,7 +308,6 @@ private fun GlassFilterTab(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GlassTaskCard(
     task: Task,
@@ -322,60 +315,13 @@ private fun GlassTaskCard(
     onDelete: () -> Unit
 ) {
     val customColors = LocalCustomColors.current
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { dismissValue ->
-            when (dismissValue) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    onToggle(!task.isCompleted)
-                    false // Don't actually dismiss the UI element, just toggle state
-                }
-                SwipeToDismissBoxValue.EndToStart -> {
-                    onDelete()
-                    true // Dismiss and delete
-                }
-                else -> false
-            }
-        }
-    )
 
-    SwipeToDismissBox(
-        state = dismissState,
-        backgroundContent = {
-            val color = when (dismissState.dismissDirection) {
-                SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                SwipeToDismissBoxValue.EndToStart -> customColors.holidayColor.copy(alpha = 0.5f)
-                else -> Color.Transparent
-            }
-            val icon = when (dismissState.dismissDirection) {
-                SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Checklist
-                SwipeToDismissBoxValue.EndToStart -> Icons.Default.DeleteOutline
-                else -> null
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(color)
-                    .padding(horizontal = 20.dp),
-                contentAlignment = if (dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) Alignment.CenterStart else Alignment.CenterEnd
-            ) {
-                icon?.let {
-                    Icon(
-                        imageVector = it,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-            }
-        },
-        content = {
-            GlassCard(
-                shape = RoundedCornerShape(16.dp),
-                backgroundColor = if (task.isCompleted) Color.White.copy(alpha = 0.03f) else Color.White.copy(alpha = 0.07f),
-                borderColor = if (task.isCompleted) Color.White.copy(alpha = 0.06f) else Color.White.copy(alpha = 0.12f),
-                modifier = Modifier.fillMaxWidth()
-            ) {
+    GlassCard(
+        shape = RoundedCornerShape(16.dp),
+        backgroundColor = if (task.isCompleted) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        borderColor = if (task.isCompleted) MaterialTheme.colorScheme.outline.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Row(
             modifier = Modifier
                 .padding(horizontal = 10.dp, vertical = 12.dp)
@@ -426,8 +372,6 @@ private fun GlassTaskCard(
                     modifier = Modifier.size(18.dp)
                 )
             }
-            }
         }
-        }
-    )
+    }
 }

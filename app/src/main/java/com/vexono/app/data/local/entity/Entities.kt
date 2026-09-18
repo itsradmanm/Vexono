@@ -89,10 +89,6 @@ data class TaskEntity(
     val isCompleted: Boolean = false,
     val priority: String = Priority.MEDIUM.name,
     val category: String = "عمومی",
-    val hasReminder: Boolean = false,
-    val reminderHour: Int? = null,
-    val reminderMinute: Int? = null,
-    val colorTag: String? = null,
     val createdAt: Long = System.currentTimeMillis()
 ) {
     fun toDomain(): Task {
@@ -105,10 +101,6 @@ data class TaskEntity(
             isCompleted = isCompleted,
             priority = runCatching { Priority.valueOf(priority) }.getOrDefault(Priority.MEDIUM),
             category = category,
-            hasReminder = hasReminder,
-            reminderHour = reminderHour,
-            reminderMinute = reminderMinute,
-            colorTag = colorTag,
             createdAt = createdAt
         )
     }
@@ -124,10 +116,6 @@ data class TaskEntity(
                 isCompleted = task.isCompleted,
                 priority = task.priority.name,
                 category = task.category,
-                hasReminder = task.hasReminder,
-                reminderHour = task.reminderHour,
-                reminderMinute = task.reminderMinute,
-                colorTag = task.colorTag,
                 createdAt = task.createdAt
             )
         }

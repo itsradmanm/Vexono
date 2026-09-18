@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,7 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,7 +35,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -50,9 +50,12 @@ import androidx.compose.ui.unit.sp
 import com.vexono.app.data.calendar.JalaliCalendarEngine
 import com.vexono.app.domain.model.JalaliDate
 import com.vexono.app.presentation.theme.LocalCustomColors
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 // ----------------------------------------------------
 // 1. Wheel Scroll Picker for Years (1300 to 1500)
+//    FIX: snapshotFlow for reactive scroll sync
 // ----------------------------------------------------
 
 @Composable
@@ -69,42 +72,50 @@ fun PersianWheelYearPicker(
         if (idx >= 0) idx else (years.size / 2)
     }
 
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = (initialIndex - 2).coerceAtLeast(0))
+    // We show 5 items at a time; the center (index 2) is the selected item.
+    // contentPadding = 2 * itemHeight so the first and last items can center.
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = (initialIndex - 2).coerceAtLeast(0)
+    )
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
-    var isScrollingInternally by remember { mutableStateOf(false) }
 
+    // BUGFIX: React to scroll position in real-time using snapshotFlow
+    // The center item index = firstVisibleItemIndex + 2 (since padding shows 2 items above)
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex }
-            .collect { index ->
-                val centerIndex = index + 2
-                if (centerIndex in years.indices) {
-                    val year = years[centerIndex]
-                    if (year != selectedYear) {
-                        isScrollingInternally = true
-                        onYearSelected(year)
-                    }
+            .map { firstVisible ->
+                // Center of the visible 5 items = firstVisible + 2
+                (firstVisible + 2).coerceIn(years.indices)
+            }
+            .distinctUntilChanged()
+            .collect { centeredIndex ->
+                val centeredYear = years.getOrNull(centeredIndex)
+                if (centeredYear != null && centeredYear != selectedYear) {
+                    onYearSelected(centeredYear)
                 }
             }
     }
 
+    // Scroll to selectedYear when it changes externally (e.g. from dialog)
     LaunchedEffect(selectedYear) {
-        if (!isScrollingInternally) {
-            val targetIdx = years.indexOf(selectedYear)
-            if (targetIdx >= 0) {
-                val scrollTarget = (targetIdx - 2).coerceAtLeast(0)
+        val targetIdx = years.indexOf(selectedYear)
+        if (targetIdx >= 0) {
+            val scrollTarget = (targetIdx - 2).coerceAtLeast(0)
+            if (listState.firstVisibleItemIndex != scrollTarget) {
                 listState.animateScrollToItem(scrollTarget)
             }
         }
-        isScrollingInternally = false
     }
+
+    val customColors = LocalCustomColors.current
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(130.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White.copy(alpha = 0.04f))
-            .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(14.dp)),
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f), RoundedCornerShape(14.dp)),
         contentAlignment = Alignment.Center
     ) {
         // Center selection bar highlight
@@ -135,7 +146,7 @@ fun PersianWheelYearPicker(
                 ) {
                     Text(
                         text = JalaliCalendarEngine.toPersianDigits(year),
-                        color = if (isSelected) Color.White else LocalCustomColors.current.textMuted.copy(alpha = 0.7f),
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
                         fontSize = if (isSelected) 18.sp else 14.sp,
                         fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
                         textAlign = TextAlign.Center
@@ -144,7 +155,8 @@ fun PersianWheelYearPicker(
             }
         }
 
-        // Top & Bottom gradient fade mask
+        // Top & Bottom gradient fade mask - color matches theme background (NOT hardcoded black)
+        val maskColor = customColors.wheelPickerMaskColor
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -152,7 +164,7 @@ fun PersianWheelYearPicker(
                 .align(Alignment.TopCenter)
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(LocalCustomColors.current.surfaceElevated, Color.Transparent)
+                        colors = listOf(maskColor.copy(alpha = 0.95f), Color.Transparent)
                     )
                 )
         )
@@ -163,7 +175,7 @@ fun PersianWheelYearPicker(
                 .align(Alignment.BottomCenter)
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, LocalCustomColors.current.surfaceElevated)
+                        colors = listOf(Color.Transparent, maskColor.copy(alpha = 0.95f))
                     )
                 )
         )
@@ -172,6 +184,7 @@ fun PersianWheelYearPicker(
 
 // ----------------------------------------------------
 // 2. Glassy Persian Date Picker Dialog (1300 to 1500)
+//    FIX: Dynamic background, Month 3x4 grid, Day 5x7 grid
 // ----------------------------------------------------
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -190,14 +203,15 @@ fun PersianDatePickerDialog(
         selectedDay = daysInMonth
     }
 
+    val customColors = LocalCustomColors.current
+
     BasicAlertDialog(
         onDismissRequest = onDismissRequest
     ) {
-        val customColors = LocalCustomColors.current
         GlassSurface(
             shape = RoundedCornerShape(24.dp),
-            backgroundColor = customColors.surfaceElevated.copy(alpha = 0.95f),
-            borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.16f),
+            backgroundColor = customColors.dialogBackground,
+            borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
             shadowElevation = 16.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -245,9 +259,9 @@ fun PersianDatePickerDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "سال شمسی (۱۳۰۰ تا ۱۵۰۰):",
+                        text = "سال شمسی:",
                         style = MaterialTheme.typography.labelMedium,
-                        color = LocalCustomColors.current.textMuted
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = JalaliCalendarEngine.toPersianDigits(selectedYear),
@@ -266,43 +280,49 @@ fun PersianDatePickerDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // 2. Month Selector
+                // 2. Month Selector: 3×4 Grid (all 12 months visible at once)
                 Text(
                     text = "ماه:",
                     style = MaterialTheme.typography.labelMedium,
-                    color = LocalCustomColors.current.textMuted
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth().height(140.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(164.dp), // 4 rows × ~38dp + spacing
+                    userScrollEnabled = false
                 ) {
-                    items((1..12).toList()) { month ->
+                    itemsIndexed((1..12).toList()) { _, month ->
                         val isSelected = month == selectedMonth
                         val monthName = JalaliCalendarEngine.PERSIAN_MONTH_NAMES[month - 1]
                         Box(
                             modifier = Modifier
+                                .fillMaxWidth()
+                                .height(36.dp)
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-                                    else Color.White.copy(alpha = 0.06f)
+                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                                 )
                                 .border(
                                     1.dp,
                                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                    else Color.White.copy(alpha = 0.1f),
+                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
                                     RoundedCornerShape(10.dp)
                                 )
-                                .clickable { selectedMonth = month }
-                                .padding(horizontal = 12.dp, vertical = 7.dp)
+                                .clickable { selectedMonth = month },
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = monthName,
                                 color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
                                 fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
@@ -310,42 +330,49 @@ fun PersianDatePickerDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // 3. Day Selector
+                // 3. Day Selector: 7×5 grid (like a mini calendar)
                 Text(
                     text = "روز:",
                     style = MaterialTheme.typography.labelMedium,
-                    color = LocalCustomColors.current.textMuted
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(6.dp))
+                val dayRows = (daysInMonth / 7) + if (daysInMonth % 7 != 0) 1 else 0
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(7),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth().height(180.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height((dayRows * 36 + (dayRows - 1) * 4).dp),
+                    userScrollEnabled = false
                 ) {
-                    items((1..daysInMonth).toList()) { day ->
+                    itemsIndexed((1..daysInMonth).toList()) { _, day ->
                         val isSelected = day == selectedDay
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
+                                .fillMaxWidth()
+                                .height(34.dp)
+                                .clip(RoundedCornerShape(8.dp))
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-                                    else Color.White.copy(alpha = 0.06f)
+                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                                 )
                                 .border(
                                     1.dp,
                                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                    else Color.White.copy(alpha = 0.1f),
-                                    RoundedCornerShape(10.dp)
+                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
+                                    RoundedCornerShape(8.dp)
                                 )
-                                .clickable { selectedDay = day }
-                                .padding(horizontal = 12.dp, vertical = 7.dp)
+                                .clickable { selectedDay = day },
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = JalaliCalendarEngine.toPersianDigits(day),
                                 color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
                                 fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
@@ -380,7 +407,7 @@ fun PersianDatePickerDialog(
 }
 
 // ----------------------------------------------------
-// 3. Glassy Persian Time Picker Dialog
+// 3. Glassy Persian Time Picker Dialog (Theme Adaptive)
 // ----------------------------------------------------
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -394,14 +421,15 @@ fun PersianTimePickerDialog(
     var selectedHour by remember { mutableIntStateOf(initialHour) }
     var selectedMinute by remember { mutableIntStateOf(initialMinute) }
 
+    val customColors = LocalCustomColors.current
+
     BasicAlertDialog(
         onDismissRequest = onDismissRequest
     ) {
-        val customColors = LocalCustomColors.current
         GlassSurface(
             shape = RoundedCornerShape(24.dp),
-            backgroundColor = customColors.surfaceElevated.copy(alpha = 0.95f),
-            borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.16f),
+            backgroundColor = customColors.dialogBackground,
+            borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
             shadowElevation = 16.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -443,41 +471,49 @@ fun PersianTimePickerDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Hour row
+                // Hour grid (0-23) as 4×6 grid
                 Text(
                     text = "ساعت (۰ تا ۲۳):",
                     style = MaterialTheme.typography.labelMedium,
-                    color = LocalCustomColors.current.textMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.Start)
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth()
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(6),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(88.dp), // 4 rows × 20dp + spacing
+                    userScrollEnabled = false
                 ) {
-                    items((0..23).toList()) { hour ->
+                    itemsIndexed((0..23).toList()) { _, hour ->
                         val isSelected = hour == selectedHour
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
+                                .fillMaxWidth()
+                                .height(36.dp)
+                                .clip(RoundedCornerShape(8.dp))
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-                                    else Color.White.copy(alpha = 0.06f)
+                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                                 )
                                 .border(
                                     1.dp,
                                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                    else Color.White.copy(alpha = 0.1f),
-                                    RoundedCornerShape(10.dp)
+                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
+                                    RoundedCornerShape(8.dp)
                                 )
-                                .clickable { selectedHour = hour }
-                                .padding(horizontal = 11.dp, vertical = 7.dp)
+                                .clickable { selectedHour = hour },
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = JalaliCalendarEngine.toPersianDigits(String.format("%02d", hour)),
                                 color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
                                 fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
@@ -485,42 +521,50 @@ fun PersianTimePickerDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Minute row
+                // Minute row (0, 5, 10, ... 55)
                 Text(
                     text = "دقیقه:",
                     style = MaterialTheme.typography.labelMedium,
-                    color = LocalCustomColors.current.textMuted,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.Start)
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 val minutesList = (0..55 step 5).toList()
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth()
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(6),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp), // 2 rows
+                    userScrollEnabled = false
                 ) {
-                    items(minutesList) { minute ->
+                    itemsIndexed(minutesList) { _, minute ->
                         val isSelected = minute == selectedMinute
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
+                                .fillMaxWidth()
+                                .height(36.dp)
+                                .clip(RoundedCornerShape(8.dp))
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-                                    else Color.White.copy(alpha = 0.06f)
+                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                                 )
                                 .border(
                                     1.dp,
                                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                    else Color.White.copy(alpha = 0.1f),
-                                    RoundedCornerShape(10.dp)
+                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
+                                    RoundedCornerShape(8.dp)
                                 )
-                                .clickable { selectedMinute = minute }
-                                .padding(horizontal = 11.dp, vertical = 7.dp)
+                                .clickable { selectedMinute = minute },
+                            contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = JalaliCalendarEngine.toPersianDigits(String.format("%02d", minute)),
                                 color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
                                 fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
