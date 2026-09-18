@@ -39,7 +39,7 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <View
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="10dp" />
 
@@ -76,10 +76,10 @@
             android:paddingBottom="3dp"
             android:visibility="gone">
 
-            <View
+            <ImageView
                 android:layout_width="3dp"
                 android:layout_height="22dp"
-                android:background="@drawable/widget_bar_indicator_green" />
+                android:src="@drawable/widget_bar_indicator_green" />
 
             <TextView
                 android:id="@+id/ev_title_1"
@@ -115,7 +115,7 @@
         </LinearLayout>
 
         <!-- Divider 1 -->
-        <View
+        <ImageView
             android:id="@+id/ev_div_1"
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -135,10 +135,10 @@
             android:paddingBottom="3dp"
             android:visibility="gone">
 
-            <View
+            <ImageView
                 android:layout_width="3dp"
                 android:layout_height="22dp"
-                android:background="@drawable/widget_bar_indicator_blue" />
+                android:src="@drawable/widget_bar_indicator_blue" />
 
             <TextView
                 android:id="@+id/ev_title_2"
@@ -174,7 +174,7 @@
         </LinearLayout>
 
         <!-- Divider 2 -->
-        <View
+        <ImageView
             android:id="@+id/ev_div_2"
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -194,10 +194,10 @@
             android:paddingBottom="3dp"
             android:visibility="gone">
 
-            <View
+            <ImageView
                 android:layout_width="3dp"
                 android:layout_height="22dp"
-                android:background="@drawable/widget_bar_indicator_orange" />
+                android:src="@drawable/widget_bar_indicator_orange" />
 
             <TextView
                 android:id="@+id/ev_title_3"

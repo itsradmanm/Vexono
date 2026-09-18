@@ -66,7 +66,7 @@ class VexonoWidgetProvider : AppWidgetProvider() {
 
             val views = RemoteViews(context.packageName, R.layout.widget_vexono_today)
             views.setTextViewText(R.id.widget_month_name, "$monthName ${JalaliCalendarEngine.toPersianDigits(todayJalali.year)}")
-            fillMonthGridCells(context, views, todayJalali, "m_cell")
+            fillMonthGridCells(context, views, todayJalali, "m")
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent(context, 0))
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
@@ -174,7 +174,7 @@ class VexonoWidgetProvider : AppWidgetProvider() {
             val views = RemoteViews(context.packageName, R.layout.widget_vexono_agenda)
 
             // Fill left calendar grid
-            fillMonthGridCells(context, views, todayJalali, "ag_c")
+            fillMonthGridCells(context, views, todayJalali, "ag")
 
             // Right header
             views.setTextViewText(R.id.ag_header_date, "$dayNumberPersian $monthName")
@@ -358,24 +358,26 @@ class VexonoWidgetProvider : AppWidgetProvider() {
             for (i in 0 until 42) {
                 val r = i / 7
                 val c = i % 7
-                val resIdName = if (prefix == "m_cell") "${prefix}_${r}_${c}" else "${prefix}${r}_${c}"
-                val resId = context.resources.getIdentifier(resIdName, "id", context.packageName)
-                if (resId == 0) continue
+                val txtResName = "${prefix}_txt_${r}_${c}"
+                val bgResName = "${prefix}_bg_${r}_${c}"
+                val txtResId = context.resources.getIdentifier(txtResName, "id", context.packageName)
+                val bgResId = context.resources.getIdentifier(bgResName, "id", context.packageName)
+                if (txtResId == 0) continue
 
                 val dayNumber = i - startDayOfWeek + 1
                 if (dayNumber in 1..daysInMonth) {
-                    views.setTextViewText(resId, JalaliCalendarEngine.toPersianDigits(dayNumber))
+                    views.setTextViewText(txtResId, JalaliCalendarEngine.toPersianDigits(dayNumber))
                     if (dayNumber == todayJalali.day) {
-                        views.setInt(resId, "setBackgroundResource", R.drawable.widget_today_circle)
-                        views.setTextColor(resId, Color.BLACK)
+                        if (bgResId != 0) views.setViewVisibility(bgResId, View.VISIBLE)
+                        views.setTextColor(txtResId, Color.BLACK)
                     } else {
-                        views.setInt(resId, "setBackgroundColor", Color.TRANSPARENT)
+                        if (bgResId != 0) views.setViewVisibility(bgResId, View.GONE)
                         val color = if (c == 6) Color.parseColor("#FF5252") else Color.parseColor("#E0E0E6")
-                        views.setTextColor(resId, color)
+                        views.setTextColor(txtResId, color)
                     }
                 } else {
-                    views.setTextViewText(resId, "")
-                    views.setInt(resId, "setBackgroundColor", Color.TRANSPARENT)
+                    views.setTextViewText(txtResId, "")
+                    if (bgResId != 0) views.setViewVisibility(bgResId, View.GONE)
                 }
             }
         }
